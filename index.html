@@ -343,6 +343,7 @@ textarea {
   text-align: center;
   color: var(--muted);
 }
+.hidden { display: none; }
 @media (max-width: 1080px) {
   .addGrid { grid-template-columns: 1fr 1fr; }
 }
@@ -369,12 +370,13 @@ textarea {
     <div class="topbar">
       <div class="headline">
         <h1 class="title">Book Tracker</h1>
-        <div class="sub">New books add to the bottom now, and you can rate them while adding them.</div>
+        <div class="sub">It now checks your repo for the preload JSON again, keeps newer books at the bottom, and lets you rate while adding.</div>
         <div class="datetime">
           <span id="todayDate">Loading date…</span>
           <span>•</span>
           <span id="todayTime">Loading time…</span>
         </div>
+        <div id="sourceNote" class="sub hidden"></div>
       </div>
       <div class="menuWrap">
         <button id="menuBtn" class="menuBtn" aria-label="Menu">⋯</button>
@@ -382,7 +384,7 @@ textarea {
           <button id="exportBtn">Export JSON</button>
           <label for="importFile">Import JSON</label>
           <input id="importFile" type="file" accept="application/json" style="display:none">
-          <button id="resetBtn">Reset local data</button>
+          <button id="resetBtn">Reset to preload</button>
         </div>
       </div>
     </div>
@@ -453,7 +455,7 @@ textarea {
       </select>
       <button id="addBtn" class="primary">Add</button>
     </div>
-    <div class="footerNote">This page keeps using the same local storage key, so your saved browser data should still load.</div>
+    <div class="footerNote">Saved browser data still wins first. Reset pulls the preload file back in.</div>
   </section>
 
   <section id="list" class="list"></section>
@@ -461,23 +463,28 @@ textarea {
 
 <script>
 const STORAGE_KEY = "dylan-book-tracker-pink-v1";
-const defaultBooks = [];
-let books = loadBooks();
+const JSON_CANDIDATES = [
+  "./book-tracker-export.json",
+  "./books.json",
+  "./data.json",
+  "./book-data.json",
+  "./books-data.json",
+  "./library.json",
+  "./data/books.json",
+  "./assets/books.json",
+  "/JazzysBooks/book-tracker-export.json",
+  "/JazzysBooks/books.json",
+  "/JazzysBooks/data.json",
+  "/JazzysBooks/book-data.json",
+  "/JazzysBooks/books-data.json",
+  "/JazzysBooks/library.json",
+  "/JazzysBooks/data/books.json",
+  "/JazzysBooks/assets/books.json"
+];
 
-function loadBooks() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return structuredClone(defaultBooks);
-  try {
-    const parsed = JSON.parse(saved);
-    return Array.isArray(parsed) ? parsed : structuredClone(defaultBooks);
-  } catch {
-    return structuredClone(defaultBooks);
-  }
-}
-
-function saveBooks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
-}
+let preloadBooks = [];
+let activePreloadPath = "";
+let books = [];
 
 function escapeHtml(str) {
   return String(str || "").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -506,7 +513,7 @@ function updateClock() {
 
 function normalizeBook(book) {
   return {
-    id: Number(book.id) || Date.now(),
+    id: Number(book.id) || Date.now() + Math.floor(Math.random() * 1000),
     title: book.title || "Untitled",
     author: book.author || "",
     series: book.series || "",
@@ -519,14 +526,61 @@ function normalizeBook(book) {
   };
 }
 
+function noteSource(message) {
+  const el = document.getElementById("sourceNote");
+  el.textContent = message;
+  el.classList.remove("hidden");
+}
+
+async function tryFetchJson(path) {
+  const res = await fetch(path, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  const incoming = Array.isArray(data) ? data : data.books;
+  if (!Array.isArray(incoming)) throw new Error("JSON shape not supported");
+  return incoming.map(normalizeBook);
+}
+
+async function loadPreloadBooks() {
+  for (const path of JSON_CANDIDATES) {
+    try {
+      const found = await tryFetchJson(path);
+      activePreloadPath = path;
+      preloadBooks = found;
+      noteSource(`Preload source: ${path}`);
+      return found;
+    } catch (err) {
+      continue;
+    }
+  }
+  preloadBooks = [];
+  noteSource("No repo JSON preload file was found in the common paths, so this page is using saved browser data only until a matching JSON path is found.");
+  return [];
+}
+
+function loadSavedBooks() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return null;
+  try {
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.map(normalizeBook);
+  } catch {
+    return null;
+  }
+}
+
+function saveBooks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+}
+
 function getFilteredBooks() {
   const q = (document.getElementById("search").value || "").toLowerCase().trim();
   const statusFilter = document.getElementById("statusFilter").value;
   const ratingFilter = document.getElementById("ratingFilter").value;
   const favoriteFilter = document.getElementById("favoriteFilter").value;
 
-  return books.filter(raw => {
-    const book = normalizeBook(raw);
+  return books.filter(book => {
     const blob = [book.title, book.author, book.series, book.comment, book.source_text].join(" ").toLowerCase();
     if (q && !blob.includes(q)) return false;
     if (statusFilter !== "all" && book.status !== statusFilter) return false;
@@ -636,7 +690,7 @@ function render() {
 function updateBook(id, patch) {
   const idx = books.findIndex(b => Number(b.id) === Number(id));
   if (idx === -1) return;
-  books[idx] = {...books[idx], ...patch};
+  books[idx] = { ...books[idx], ...patch };
   saveBooks();
 }
 
@@ -657,7 +711,7 @@ document.addEventListener("click", (e) => {
     const id = Number(star.dataset.book);
     const value = Number(star.dataset.star);
     const book = books.find(b => Number(b.id) === id);
-    updateBook(id, {rating: Number(book.rating || 0) === value ? "" : value});
+    updateBook(id, { rating: Number(book.rating || 0) === value ? "" : value });
     render();
     return;
   }
@@ -667,7 +721,7 @@ document.addEventListener("click", (e) => {
     e.stopPropagation();
     const id = Number(fav.dataset.id);
     const book = books.find(b => Number(b.id) === id);
-    updateBook(id, {favorite: !book.favorite});
+    updateBook(id, { favorite: !book.favorite });
     render();
     return;
   }
@@ -676,10 +730,10 @@ document.addEventListener("click", (e) => {
 document.addEventListener("input", (e) => {
   const id = Number(e.target.dataset.id);
   if (id) {
-    if (e.target.classList.contains("js-author")) updateBook(id, {author: e.target.value});
-    if (e.target.classList.contains("js-series")) updateBook(id, {series: e.target.value});
-    if (e.target.classList.contains("js-year")) updateBook(id, {published_year: e.target.value});
-    if (e.target.classList.contains("js-comment")) updateBook(id, {comment: e.target.value});
+    if (e.target.classList.contains("js-author")) updateBook(id, { author: e.target.value });
+    if (e.target.classList.contains("js-series")) updateBook(id, { series: e.target.value });
+    if (e.target.classList.contains("js-year")) updateBook(id, { published_year: e.target.value });
+    if (e.target.classList.contains("js-comment")) updateBook(id, { comment: e.target.value });
   }
   if (e.target.id === "search") render();
 });
@@ -687,11 +741,11 @@ document.addEventListener("input", (e) => {
 document.addEventListener("change", (e) => {
   const id = Number(e.target.dataset.id);
   if (id && e.target.classList.contains("js-status")) {
-    updateBook(id, {status: e.target.value});
+    updateBook(id, { status: e.target.value });
     render();
     return;
   }
-  if (["statusFilter","ratingFilter","favoriteFilter"].includes(e.target.id)) render();
+  if (["statusFilter", "ratingFilter", "favoriteFilter"].includes(e.target.id)) render();
 });
 
 document.getElementById("addBtn").addEventListener("click", () => {
@@ -714,13 +768,13 @@ document.getElementById("addBtn").addEventListener("click", () => {
     source_text: title
   });
   saveBooks();
-  ["newTitle","newAuthor","newSeries","newYear","newRating"].forEach(id => document.getElementById(id).value = "");
+  ["newTitle", "newAuthor", "newSeries", "newYear", "newRating"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("newStatus").value = "read";
   render();
 });
 
 document.getElementById("exportBtn").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(books, null, 2)], {type: "application/json"});
+  const blob = new Blob([JSON.stringify(books, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -746,10 +800,11 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
   }
 });
 
-document.getElementById("resetBtn").addEventListener("click", () => {
-  const ok = confirm("Clear the saved browser data for this tracker?");
+document.getElementById("resetBtn").addEventListener("click", async () => {
+  const ok = confirm("Reset everything back to the repo preload JSON?");
   if (!ok) return;
-  books = structuredClone(defaultBooks);
+  await loadPreloadBooks();
+  books = structuredClone(preloadBooks);
   saveBooks();
   render();
 });
@@ -764,9 +819,16 @@ document.addEventListener("click", (e) => {
   if (!menu.contains(e.target) && e.target !== menuBtn) menu.classList.remove("open");
 });
 
-updateClock();
-setInterval(updateClock, 1000);
-render();
+async function init() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  await loadPreloadBooks();
+  const saved = loadSavedBooks();
+  books = saved && saved.length ? saved : structuredClone(preloadBooks);
+  render();
+}
+
+init();
 </script>
 </body>
 </html>
