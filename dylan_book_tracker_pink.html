@@ -5,467 +5,221 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dylan Book Tracker</title>
 <style>
-:root {
-  --bg: #fff8fb;
-  --panel: rgba(255,255,255,.9);
-  --panel-2: #fff1f6;
-  --panel-3: #ffe4ee;
-  --line: #f2d7e3;
-  --text: #2b1d25;
-  --muted: #8b6d79;
-  --accent: #ec8fb3;
-  --accent-2: #f6b7cf;
-  --accent-3: #ffd8e7;
-  --shadow: 0 18px 50px rgba(215, 124, 164, .14);
-  --radius-xl: 28px;
-  --radius-lg: 22px;
-  --radius-md: 16px;
+:root{
+  --bg:#f7fbff;
+  --bg2:#eef6ff;
+  --panel:rgba(255,255,255,.88);
+  --panel-2:#f6fbff;
+  --panel-3:#eaf4ff;
+  --line:#d9e8fb;
+  --text:#0f1728;
+  --muted:#6f86a6;
+  --accent:#7cc6ff;
+  --accent-2:#a88cff;
+  --accent-3:#dff1ff;
+  --good:#e8fff4;
+  --pink:#ffe8f3;
+  --shadow:0 18px 50px rgba(86,132,201,.12);
+  --radius-xl:30px;
+  --radius-lg:22px;
+  --radius-md:16px;
 }
-
-* { box-sizing: border-box; }
-html, body {
-  margin: 0;
-  padding: 0;
+*{box-sizing:border-box}
+html,body{
+  margin:0;padding:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
   background:
-    radial-gradient(circle at top left, #fffdfd 0%, #fff7fa 42%, #fff2f7 100%);
-  color: var(--text);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    radial-gradient(circle at top left,#ffffff 0%,#f7fbff 35%,#eef6ff 100%);
 }
-body { padding: 18px; }
-.wrap { max-width: 1180px; margin: 0 auto; }
-
-.top {
-  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,248,252,.95));
-  border: 1px solid var(--line);
-  border-radius: 32px;
-  box-shadow: var(--shadow);
-  padding: 22px;
-  margin-bottom: 16px;
-  backdrop-filter: blur(12px);
+body{padding:18px}
+.wrap{max-width:1200px;margin:0 auto}
+.top,.addBox,.list{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px);
 }
-
-.topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+.top{
+  padding:22px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
 }
-
-.headline {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
+.top::before{
+  content:"";
+  position:absolute;
+  width:320px;height:320px;border-radius:999px;
+  background:radial-gradient(circle, rgba(124,198,255,.22), rgba(168,140,255,.10), transparent 70%);
+  top:-120px;right:-100px;
+  pointer-events:none;
 }
-
-.title {
-  margin: 0;
-  font-size: clamp(28px, 5vw, 42px);
-  line-height: .95;
-  letter-spacing: -.04em;
-  font-weight: 800;
+.topbar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  position:relative;
+  z-index:1;
 }
-
-.sub {
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.35;
+.headline{display:flex;flex-direction:column;gap:8px;min-width:0}
+.title{
+  margin:0;
+  font-size:clamp(30px,5vw,48px);
+  line-height:.94;
+  font-weight:850;
+  letter-spacing:-.05em;
 }
-
-.datetime {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  width: fit-content;
-  margin-top: 4px;
-  background: var(--panel-2);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 10px 14px;
-  color: var(--muted);
-  font-size: 13px;
+.sub{color:var(--muted);font-size:14px;line-height:1.4}
+.datetime{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  width:fit-content;
+  background:linear-gradient(180deg,#fff,#f5fbff);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:10px 14px;
+  color:var(--muted);
+  font-size:13px;
 }
-
-.menuWrap { position: relative; }
-
-.menuBtn {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, #fff, #fff3f8);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 22px;
-  box-shadow: 0 8px 18px rgba(215,124,164,.12);
+.menuWrap{position:relative}
+.menuBtn{
+  width:48px;height:48px;border-radius:16px;border:1px solid var(--line);
+  background:linear-gradient(180deg,#fff,#f4f9ff);
+  color:var(--text);cursor:pointer;font-size:22px;box-shadow:0 8px 20px rgba(86,132,201,.10);
 }
-
-.menu {
-  position: absolute;
-  top: 58px;
-  right: 0;
-  width: 230px;
-  background: rgba(255,255,255,.96);
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  box-shadow: var(--shadow);
-  padding: 8px;
-  display: none;
-  z-index: 40;
-  backdrop-filter: blur(10px);
+.menu{
+  position:absolute;top:58px;right:0;width:250px;background:rgba(255,255,255,.96);
+  border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+  padding:8px;display:none;z-index:40;backdrop-filter:blur(10px);
 }
-
-.menu.open { display: block; }
-
-.menu button,
-.menu label {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 12px;
-  border: 0;
-  background: transparent;
-  border-radius: 14px;
-  cursor: pointer;
-  color: var(--text);
-  font: inherit;
+.menu.open{display:block}
+.menu button,.menu label{
+  display:flex;width:100%;align-items:center;gap:10px;padding:12px 12px;border:0;
+  background:transparent;border-radius:14px;cursor:pointer;color:var(--text);font:inherit;
 }
-
-.menu button:hover,
-.menu label:hover {
-  background: var(--panel-2);
+.menu button:hover,.menu label:hover{background:var(--panel-2)}
+.stats{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px;
+  position:relative;z-index:1;
 }
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+.stat{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(240,247,255,.92));
+  border:1px solid var(--line);border-radius:24px;padding:18px 16px;min-width:0;
+  box-shadow:0 10px 24px rgba(86,132,201,.08);
 }
-
-.stat {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at top right, rgba(255,255,255,.92), rgba(255,240,247,.92));
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  padding: 18px 16px;
-  min-width: 0;
-  box-shadow: 0 10px 24px rgba(215,124,164,.10);
+.stat::after{
+  content:"";position:absolute;inset:auto -24px -24px auto;width:90px;height:90px;border-radius:999px;
+  background:rgba(124,198,255,.18);
 }
-
-.stat::after {
-  content: "";
-  position: absolute;
-  inset: auto -28px -28px auto;
-  width: 90px;
-  height: 90px;
-  border-radius: 999px;
-  background: rgba(246,183,207,.22);
+.num{
+  position:relative;z-index:1;font-size:clamp(24px,4vw,36px);font-weight:850;letter-spacing:-.05em;line-height:1;
 }
-
-.num {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(24px, 4vw, 34px);
-  font-weight: 850;
-  letter-spacing: -.05em;
-  line-height: 1;
+.lab{position:relative;z-index:1;color:var(--muted);font-size:12px;margin-top:6px}
+.controls{
+  display:grid;grid-template-columns:minmax(0,1.7fr) repeat(3,minmax(0,.85fr));
+  gap:10px;margin-top:16px;position:relative;z-index:1;
 }
-
-.lab {
-  position: relative;
-  z-index: 1;
-  color: var(--muted);
-  font-size: 12px;
-  margin-top: 6px;
+.control input,.control select,
+.addGrid input,.addGrid select,.detailGrid input,.detailGrid select,textarea{
+  width:100%;appearance:none;border:1px solid var(--line);border-radius:18px;background:#fff;
+  padding:13px 15px;color:var(--text);outline:none;font:inherit;
 }
-
-.controls {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, .8fr));
-  gap: 10px;
-  margin-top: 16px;
+.control input:focus,.control select:focus,
+.addGrid input:focus,.addGrid select:focus,
+.detailGrid input:focus,.detailGrid select:focus,textarea:focus{
+  border-color:#9cd4ff;box-shadow:0 0 0 4px rgba(124,198,255,.16);
 }
-
-.control {
-  position: relative;
+.addBox{padding:18px;margin-bottom:16px}
+.addTop{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.addTitle{font-size:18px;font-weight:800;letter-spacing:-.02em}
+.addGrid{
+  display:grid;
+  grid-template-columns:1.6fr 1fr 1fr 120px 140px auto;
+  gap:10px;
+  margin-top:12px;
 }
-
-.control input,
-.control select {
-  width: 100%;
-  appearance: none;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255,255,255,.92);
-  padding: 13px 15px;
-  color: var(--text);
-  outline: none;
-  font: inherit;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+button,input,select,textarea{font:inherit}
+button.primary{
+  border:1px solid #78bfff;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;border-radius:16px;padding:11px 14px;cursor:pointer;font-weight:800;
+  box-shadow:0 14px 24px rgba(124,198,255,.25);
 }
-
-.control input:focus,
-.control select:focus {
-  border-color: #efacc8;
-  box-shadow: 0 0 0 4px rgba(236,143,179,.14);
+.list{overflow:hidden}
+.bookRow{border-top:1px solid #e7f0fb}
+.bookRow:first-child{border-top:0}
+.bookHead{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;cursor:pointer;
+  transition:background .18s ease;
 }
-
-.addBox,
-.list {
-  background: rgba(255,255,255,.9);
-  border: 1px solid var(--line);
-  border-radius: 30px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
+.bookHead:hover{background:rgba(236,245,255,.75)}
+.bookLeft{min-width:0;display:flex;align-items:center;gap:12px}
+.chev{
+  width:34px;height:34px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--panel-2);border:1px solid var(--line);color:var(--muted);flex:0 0 auto;font-weight:700;
 }
-
-.addBox {
-  padding: 18px;
-  margin-bottom: 16px;
+.bookTitle{font-size:15px;font-weight:800;line-height:1.28;letter-spacing:-.01em}
+.bookMeta{color:var(--muted);font-size:12px;margin-top:4px}
+.rightBits{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#f6fbff;
+  color:var(--muted);border-radius:999px;padding:7px 10px;font-size:12px;white-space:nowrap;
 }
-
-.addTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
+.pill.fav{background:var(--pink);color:#b85685;border-color:#f8c6de}
+.pill.rate{background:#eef8ff;color:#5181aa;border-color:#cfe5fb}
+.details{
+  display:none;padding:0 18px 18px 18px;border-top:1px dashed var(--line);
+  background:linear-gradient(180deg,rgba(252,254,255,.98),rgba(244,249,255,.98));
 }
-
-.addTitle {
-  font-size: 18px;
-  font-weight: 750;
-  letter-spacing: -.02em;
+.details.open{display:block}
+.detailGrid{
+  display:grid;grid-template-columns:1fr 1fr 120px 160px;gap:10px;padding-top:14px;
 }
-
-.addGrid {
-  display: grid;
-  grid-template-columns: 1.7fr 1fr 1fr 120px auto;
-  gap: 10px;
-  margin-top: 12px;
+.full{margin-top:10px}
+.smallLab{color:var(--muted);font-size:12px;margin-bottom:6px}
+textarea{min-height:100px;resize:vertical}
+.starRow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.starBtn,.favBtn,.softBtn{
+  height:40px;min-width:40px;padding:0 12px;border-radius:14px;border:1px solid var(--line);background:#fff;cursor:pointer;
 }
-
-input, select, textarea, button { font: inherit; }
-
-.addGrid input,
-.detailGrid input,
-.detailGrid select,
-textarea {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-  padding: 11px 13px;
-  color: var(--text);
-  outline: none;
+.starBtn.active{background:#fff7d9;border-color:#f1d97b}
+.favBtn.active{background:var(--pink);border-color:#f3bad3}
+.rowActions{display:flex;gap:10px;align-items:flex-end;margin-top:12px;flex-wrap:wrap}
+.empty{padding:38px 18px;color:var(--muted);text-align:center}
+.footerNote{color:var(--muted);font-size:12px;margin-top:12px;padding-left:2px}
+.banner{
+  margin-top:12px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:linear-gradient(180deg,#f4fbff,#edf7ff);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:13px;
 }
-
-textarea {
-  min-height: 100px;
-  resize: vertical;
+.banner.error{
+  background:linear-gradient(180deg,#fff7fb,#fff1f7);
+  border-color:#f3d4e1;
+  color:#a46383;
 }
-
-button.primary {
-  border: 1px solid #e889af;
-  background: linear-gradient(180deg, #f4a9c6, #e88eb2);
-  color: white;
-  border-radius: 16px;
-  padding: 11px 14px;
-  cursor: pointer;
-  font-weight: 700;
-  box-shadow: 0 12px 20px rgba(232,142,178,.22);
+@media (max-width:980px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .controls{grid-template-columns:1fr 1fr}
+  .addGrid{grid-template-columns:1fr}
+  .detailGrid{grid-template-columns:1fr}
 }
-
-.list {
-  overflow: hidden;
-}
-
-.bookRow {
-  border-top: 1px solid #f8dde8;
-}
-
-.bookRow:first-child {
-  border-top: 0;
-}
-
-.bookHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 16px 18px;
-  cursor: pointer;
-  transition: background .18s ease;
-}
-
-.bookHead:hover {
-  background: rgba(255,240,246,.55);
-}
-
-.bookLeft {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.chev {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--panel-2);
-  border: 1px solid var(--line);
-  color: var(--muted);
-  flex: 0 0 auto;
-  font-weight: 700;
-}
-
-.bookTitle {
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.28;
-  letter-spacing: -.01em;
-}
-
-.bookMeta {
-  color: var(--muted);
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-.rightBits {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--line);
-  background: #fff6fa;
-  color: var(--muted);
-  border-radius: 999px;
-  padding: 7px 10px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.pill.fav {
-  background: #ffeaf2;
-  color: #b04b73;
-  border-color: #f8c8da;
-}
-
-.pill.rate {
-  background: #fff0f6;
-  color: #ad5c82;
-  border-color: #f2bfd2;
-}
-
-.details {
-  display: none;
-  padding: 0 18px 18px 18px;
-  border-top: 1px dashed var(--line);
-  background: linear-gradient(180deg, rgba(255,251,253,.96), rgba(255,245,249,.96));
-}
-
-.details.open {
-  display: block;
-}
-
-.detailGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 120px 160px;
-  gap: 10px;
-  padding-top: 14px;
-}
-
-.full {
-  margin-top: 10px;
-}
-
-.smallLab {
-  color: var(--muted);
-  font-size: 12px;
-  margin-bottom: 6px;
-}
-
-.starRow {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.starBtn,
-.favBtn,
-.softBtn {
-  height: 40px;
-  min-width: 40px;
-  padding: 0 12px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: white;
-  cursor: pointer;
-}
-
-.starBtn.active {
-  background: #ffe9f2;
-  border-color: #efacc8;
-}
-
-.favBtn.active {
-  background: #ffeaf2;
-  border-color: #f6b2cc;
-}
-
-.rowActions {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-
-.empty {
-  padding: 38px 18px;
-  color: var(--muted);
-  text-align: center;
-}
-
-.footerNote {
-  color: var(--muted);
-  font-size: 12px;
-  margin-top: 12px;
-  padding-left: 2px;
-}
-
-@media (max-width: 980px) {
-  .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  .controls { grid-template-columns: 1fr 1fr; }
-  .addGrid { grid-template-columns: 1fr; }
-  .detailGrid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 640px) {
-  body { padding: 12px; }
-  .top, .addBox, .list { border-radius: 24px; }
-  .stats { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
-  .num { font-size: 19px; }
-  .lab { font-size: 10px; }
-  .controls { grid-template-columns: 1fr; }
-  .bookHead { align-items: flex-start; }
-  .rightBits { width: 100%; justify-content: flex-start; }
+@media (max-width:640px){
+  body{padding:12px}
+  .top,.addBox,.list{border-radius:24px}
+  .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .num{font-size:19px}
+  .lab{font-size:10px}
+  .controls{grid-template-columns:1fr}
+  .bookHead{align-items:flex-start}
+  .rightBits{width:100%;justify-content:flex-start}
 }
 </style>
 </head>
@@ -474,8 +228,8 @@ button.primary {
   <section class="top">
     <div class="topbar">
       <div class="headline">
-        <h1 class="title">Book Tracker</h1>
-        <div class="sub">Title-first view. Tap a book to open everything else.</div>
+        <h1 class="title">Jazzy’s Books</h1>
+        <div class="sub">DS Digital Designs style. Pulls from your GitHub JSON first, then saves your edits locally.</div>
         <div class="datetime">
           <span id="todayDate">Loading date…</span>
           <span>•</span>
@@ -485,10 +239,11 @@ button.primary {
       <div class="menuWrap">
         <button id="menuBtn" class="menuBtn" aria-label="Menu">⋯</button>
         <div id="menu" class="menu">
+          <button id="reloadRepoBtn">Reload from repo JSON</button>
+          <button id="clearLocalBtn">Clear local cache</button>
           <button id="exportBtn">Export JSON</button>
           <label for="importFile">Import JSON</label>
           <input id="importFile" type="file" accept="application/json" style="display:none">
-          <button id="resetBtn">Reset to preload</button>
         </div>
       </div>
     </div>
@@ -529,13 +284,15 @@ button.primary {
         </select>
       </div>
     </div>
+
+    <div id="loadBanner" class="banner">Loading…</div>
   </section>
 
   <section class="addBox">
     <div class="addTop">
       <div>
         <div class="addTitle">Add a book</div>
-        <div class="sub">Fast entry, clean layout, still editable after you add it.</div>
+        <div class="sub">New books go to the bottom. You can rate them before you add them.</div>
       </div>
     </div>
     <div class="addGrid">
@@ -543,29 +300,102 @@ button.primary {
       <input id="newAuthor" type="text" placeholder="Author">
       <input id="newSeries" type="text" placeholder="Series / book info">
       <input id="newYear" type="text" placeholder="Year">
+      <select id="newRating">
+        <option value="">Unrated</option>
+        <option value="1">1★</option>
+        <option value="2">2★</option>
+        <option value="3">3★</option>
+        <option value="4">4★</option>
+        <option value="5">5★</option>
+      </select>
       <button id="addBtn" class="primary">Add</button>
     </div>
-    <div class="footerNote">Preloaded from your partially filled JSON. You can change anything.</div>
+    <div class="footerNote">Repo JSON is the base source. After it loads, your edits save in local storage on this device.</div>
   </section>
 
   <section id="list" class="list"></section>
 </div>
 
 <script>
-const STORAGE_KEY = "dylan-book-tracker-pink-v1";
-const defaultBooks = [{"id": 1, "title": "Nearly gone", "author": "Elle Cosimano", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Nearly gone"}, {"id": 2, "title": "The cabin", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The cabin"}, {"id": 3, "title": "The cellar", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The cellar"}, {"id": 4, "title": "The haunting", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The haunting"}, {"id": 5, "title": "The fear", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The fear"}, {"id": 6, "title": "The lake", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The lake"}, {"id": 7, "title": "You will be mine", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "You will be mine"}, {"id": 8, "title": "The lost", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The lost"}, {"id": 9, "title": "Awake", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Awake"}, {"id": 10, "title": "The island", "author": "Natasha Preston", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The island"}, {"id": 11, "title": "Court of Ravens: Feathers so ViciousLiv Zander’s *Favorite Series* 🫶🏻", "author": "Liv Zander", "series": "Court of Ravens", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "Court of Ravens: Feathers so ViciousLiv Zander’s *Favorite Series* 🫶🏻"}, {"id": 12, "title": "Court of Ravens: Shadows so Cruel- Liv Zander’s *Favorite Series*🫶🏻", "author": "Liv Zander", "series": "Court of Ravens", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "Court of Ravens: Shadows so Cruel- Liv Zander’s *Favorite Series*🫶🏻"}, {"id": 13, "title": "The Unseelie Prince book 1", "author": "Kathryn Ann Kingsley", "series": "Maze of Shadows", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Unseelie Prince book 1"}, {"id": 14, "title": "The Unseelie Throne book 2", "author": "Kathryn Ann Kingsley", "series": "Maze of Shadows", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Unseelie Throne book 2"}, {"id": 15, "title": "Maze of shadows book 3", "author": "Kathryn Ann Kingsley", "series": "Maze of Shadows", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Maze of shadows book 3"}, {"id": 16, "title": "The Serpent and the Wings of Night", "author": "Carissa Broadbent", "series": "Crowns of Nyaxia", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Serpent and the Wings of Night"}, {"id": 17, "title": "The Ashes and the Star Cursed King", "author": "Carissa Broadbent", "series": "Crowns of Nyaxia", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Ashes and the Star Cursed King"}, {"id": 18, "title": "A Deal with the Shadow King", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Deal with the Shadow King"}, {"id": 19, "title": "Quicksilver (Need to Finish) NOVEMBER 18 2025", "author": "Callie Hart", "series": "Fae & Alchemy", "published_year": "", "status": "need-to-finish", "rating": "", "favorite": false, "comment": "", "source_text": "Quicksilver (Need to Finish) NOVEMBER 18 2025"}, {"id": 20, "title": "The Lucan Kings Captive", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Lucan Kings Captive"}, {"id": 21, "title": "A Ruin of Roses", "author": "K.F. Breene", "series": "Deliciously Dark Fairytales", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Ruin of Roses"}, {"id": 22, "title": "A Throne of Ruin", "author": "K.F. Breene", "series": "Deliciously Dark Fairytales", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Throne of Ruin"}, {"id": 23, "title": "A Kingdom of Ruin", "author": "K.F. Breene", "series": "Deliciously Dark Fairytales", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Kingdom of Ruin"}, {"id": 24, "title": "A Cage of Crimson", "author": "K.F. Breene", "series": "Deliciously Dark Fairytales", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Cage of Crimson"}, {"id": 25, "title": "A Cage of Kingdoms", "author": "K.F. Breene", "series": "Deliciously Dark Fairytales", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Cage of Kingdoms"}, {"id": 26, "title": "Nectar of the Wicked", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Nectar of the Wicked"}, {"id": 27, "title": "Wrath of the Damned", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Wrath of the Damned"}, {"id": 28, "title": "Phantasma", "author": "Kaylie Smith", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Phantasma"}, {"id": 29, "title": "The Ever King", "author": "L.J. Andrews", "series": "The Ever Seas", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Ever King"}, {"id": 30, "title": "Frost", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Frost"}, {"id": 31, "title": "The Ever Queen", "author": "L.J. Andrews", "series": "The Ever Seas", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Ever Queen"}, {"id": 32, "title": "The Shepherd King Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Shepherd King Book 1"}, {"id": 33, "title": "The Shepherd King Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Shepherd King Book 2"}, {"id": 34, "title": "Darkness Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Darkness Book 1"}, {"id": 35, "title": "Darkness Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Darkness Book 2"}, {"id": 36, "title": "Devils Deal", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Devils Deal"}, {"id": 37, "title": "Reign of Cinders and Glass", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Reign of Cinders and Glass"}, {"id": 38, "title": "Dark Fae", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dark Fae"}, {"id": 39, "title": "Fated to the Wolf Prince", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fated to the Wolf Prince"}, {"id": 40, "title": "King of Fire and Flames", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "King of Fire and Flames"}, {"id": 41, "title": "The King of Frost and Shadows", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The King of Frost and Shadows"}, {"id": 42, "title": "The Court of Thorns and Wings", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Court of Thorns and Wings"}, {"id": 43, "title": "The Kingdom of Flames and Ash", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Kingdom of Flames and Ash"}, {"id": 44, "title": "Prince of Never", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Prince of Never"}, {"id": 45, "title": "Bite the Woman that Feeds", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Bite the Woman that Feeds"}, {"id": 46, "title": "Bite the Terror that Feeds", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Bite the Terror that Feeds"}, {"id": 47, "title": "Bite the Power that Feeds", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Bite the Power that Feeds"}, {"id": 48, "title": "Anathema", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Anathema"}, {"id": 49, "title": "Shifter City Fated Mates book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shifter City Fated Mates book 1"}, {"id": 50, "title": "Shifter City Fated Mates book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shifter City Fated Mates book 2"}, {"id": 51, "title": "Shifter City Fated Mates Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shifter City Fated Mates Book 3"}, {"id": 52, "title": "Shifter City Fated Mates Book 4 (January 23, 2026)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shifter City Fated Mates Book 4 (January 23, 2026)"}, {"id": 53, "title": "The Witchwood Boys Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Witchwood Boys Book 1"}, {"id": 54, "title": "The Witchwood Boys Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Witchwood Boys Book 2"}, {"id": 55, "title": "The Witchwood Boys Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Witchwood Boys Book 3"}, {"id": 56, "title": "The Bonds that Tie Book 1", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Bonds that Tie Book 1"}, {"id": 57, "title": "The Bonds that Tie Book 2", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Bonds that Tie Book 2"}, {"id": 58, "title": "The Bonds that Tie Book 3", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Bonds that Tie Book 3"}, {"id": 59, "title": "The Bonds that Tie Book 4", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Bonds that Tie Book 4"}, {"id": 60, "title": "The Bonds that Tie Book 5", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Bonds that Tie Book 5"}, {"id": 61, "title": "The Bonds that Tie Book 6", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Bonds that Tie Book 6"}, {"id": 62, "title": "Havoc", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Havoc"}, {"id": 63, "title": "Mayhem", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Mayhem"}, {"id": 64, "title": "Shadow Beast Shifters Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shadow Beast Shifters Book 1"}, {"id": 65, "title": "Shadow Beast Shifters Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shadow Beast Shifters Book 2"}, {"id": 66, "title": "Shadow Beast Shifters Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shadow Beast Shifters Book 3"}, {"id": 67, "title": "Starlight Mates Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Starlight Mates Book 1"}, {"id": 68, "title": "Starlight Mates Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Starlight Mates Book 2"}, {"id": 69, "title": "If You Don’t Love Me We Both Die", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "If You Don’t Love Me We Both Die"}, {"id": 70, "title": "Kings of Quarantine 🫶🏻", "author": "Caroline Peckham, Susanne Valenti", "series": "Brutal Boys of Everlake Prep", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "Kings of Quarantine 🫶🏻"}, {"id": 71, "title": "Kings of Lockdown", "author": "Caroline Peckham, Susanne Valenti", "series": "Brutal Boys of Everlake Prep", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Kings of Lockdown"}, {"id": 72, "title": "Kings of Anarchy", "author": "Caroline Peckham, Susanne Valenti", "series": "Brutal Boys of Everlake Prep", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Kings of Anarchy"}, {"id": 73, "title": "Queen of Quarantine", "author": "Caroline Peckham, Susanne Valenti", "series": "Brutal Boys of Everlake Prep", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Queen of Quarantine"}, {"id": 74, "title": "Devils Day Party", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Devils Day Party"}, {"id": 75, "title": "The Forever Crew Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Forever Crew Book 1"}, {"id": 76, "title": "The Forever Crew Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Forever Crew Book 2"}, {"id": 77, "title": "The forever Crew Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The forever Crew Book 3"}, {"id": 78, "title": "Blood Oath", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood Oath"}, {"id": 79, "title": "The Arrow Hart Academy Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Arrow Hart Academy Book 1"}, {"id": 80, "title": "The Arrow Hart Academy Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Arrow Hart Academy Book 2"}, {"id": 81, "title": "The Arrow Hart Academy Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Arrow Hart Academy Book 3"}, {"id": 82, "title": "The Arrow Hart Academy Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Arrow Hart Academy Book 4"}, {"id": 83, "title": "The Arrow Hart Academy Book 5", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Arrow Hart Academy Book 5"}, {"id": 84, "title": "Her Tortured Beasts Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Tortured Beasts Book 1"}, {"id": 85, "title": "Her Torchered Beasts Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Torchered Beasts Book 2"}, {"id": 86, "title": "Her Tortured Beasts Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Tortured Beasts Book 3"}, {"id": 87, "title": "Her Tortured Beasts Book 4 (December 31,2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Tortured Beasts Book 4 (December 31,2025)"}, {"id": 88, "title": "The Blood of Gods and Monsters Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Blood of Gods and Monsters Book 1"}, {"id": 89, "title": "The Blood of Gods and Monsters Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Blood of Gods and Monsters Book 2"}, {"id": 90, "title": "The Blood of Gods and Monsters Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Blood of Gods and Monsters Book 3"}, {"id": 91, "title": "Alice in Underland Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Alice in Underland Book 1"}, {"id": 92, "title": "Alice in Underland Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Alice in Underland Book 2"}, {"id": 93, "title": "Alice in Underland Book 3.   81", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Alice in Underland Book 3.   81"}, {"id": 94, "title": "Lera of Lino’s Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Lera of Lino’s Book 1"}, {"id": 95, "title": "Lera of Lunos Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Lera of Lunos Book 2"}, {"id": 96, "title": "Lera of Lunos Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Lera of Lunos Book 3"}, {"id": 97, "title": "Lera of Lunos Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Lera of Lunos Book 4"}, {"id": 98, "title": "The Ritual", "author": "Shantel Tessier", "series": "L.O.R.D.S.", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Ritual"}, {"id": 99, "title": "Fury of the Kings Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fury of the Kings Book 1"}, {"id": 100, "title": "Fury of the Kings Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fury of the Kings Book 2"}, {"id": 101, "title": "Fury of the Kings Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fury of the Kings Book 3"}, {"id": 102, "title": "Midnight Reign Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Midnight Reign Book 1"}, {"id": 103, "title": "Midnight Reign Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Midnight Reign Book 2"}, {"id": 104, "title": "Arrans obsession", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Arrans obsession"}, {"id": 105, "title": "Court of Thorns and Roses", "author": "Sarah J. Maas", "series": "A Court of Thorns and Roses", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Court of Thorns and Roses"}, {"id": 106, "title": "Dragons Futre Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dragons Futre Book 1"}, {"id": 107, "title": "Dragons Future Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dragons Future Book 2"}, {"id": 108, "title": "Dragons Future Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dragons Future Book 3"}, {"id": 109, "title": "Dragons future Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dragons future Book 4"}, {"id": 110, "title": "Tender Thorns", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Tender Thorns"}, {"id": 111, "title": "Bitter Brambles (Need to finish, 2025)", "author": "", "series": "", "published_year": "", "status": "need-to-finish", "rating": "", "favorite": false, "comment": "", "source_text": "Bitter Brambles (Need to finish, 2025)"}, {"id": 112, "title": "Reagan of Ruin Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Reagan of Ruin Book 1"}, {"id": 113, "title": "Reagan of Ruin Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Reagan of Ruin Book 2"}, {"id": 114, "title": "Reagan of Ruin Book 3 (June 5, 2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Reagan of Ruin Book 3 (June 5, 2025)"}, {"id": 115, "title": "Three Trials Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Three Trials Book 1"}, {"id": 116, "title": "Three Trials Book 2.    103", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Three Trials Book 2.    103"}, {"id": 117, "title": "Den of Vipers", "author": "K.A. Knight", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Den of Vipers"}, {"id": 118, "title": "Loving demons Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Loving demons Book 1"}, {"id": 119, "title": "Loving Demons Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Loving Demons Book 2"}, {"id": 120, "title": "Loving Demons Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Loving Demons Book 3"}, {"id": 121, "title": "Loving Demons Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Loving Demons Book 4"}, {"id": 122, "title": "Trickery", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Trickery"}, {"id": 123, "title": "Persuasion", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Persuasion"}, {"id": 124, "title": "Heir Academy", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Heir Academy"}, {"id": 125, "title": "Tasting Madness Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Tasting Madness Book 1"}, {"id": 126, "title": "Tasting Madness Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Tasting Madness Book 2"}, {"id": 127, "title": "Tasting Madness Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Tasting Madness Book 3"}, {"id": 128, "title": "Blackened Bond Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blackened Bond Book 1"}, {"id": 129, "title": "Blackened Bond Book 2 (TO BE CONTINUED)", "author": "", "series": "", "published_year": "", "status": "need-to-finish", "rating": "", "favorite": false, "comment": "", "source_text": "Blackened Bond Book 2 (TO BE CONTINUED)"}, {"id": 130, "title": "Unchained Shadows Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Unchained Shadows Book 1"}, {"id": 131, "title": "Unchained Shadows Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Unchained Shadows Book 2"}, {"id": 132, "title": "Unchained Shadows Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Unchained Shadows Book 3"}, {"id": 133, "title": "Next Door Dragon Daddy", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Next Door Dragon Daddy"}, {"id": 134, "title": "Infinity Chronicles Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Infinity Chronicles Book 1"}, {"id": 135, "title": "Infinity Chronicles Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Infinity Chronicles Book 2"}, {"id": 136, "title": "Infinity Chronicles Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Infinity Chronicles Book 3"}, {"id": 137, "title": "Infinity Chronicles Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Infinity Chronicles Book 4"}, {"id": 138, "title": "Destiny of Ashes Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Destiny of Ashes Book 1"}, {"id": 139, "title": "Destiny of Ashes Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Destiny of Ashes Book 2"}, {"id": 140, "title": "Destiny of Ashes Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Destiny of Ashes Book 3"}, {"id": 141, "title": "Ironside Acedemy Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ironside Acedemy Book 1"}, {"id": 142, "title": "Ironside Academy Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ironside Academy Book 2"}, {"id": 143, "title": "Ironside Academy Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ironside Academy Book 3"}, {"id": 144, "title": "Ironside Academy Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ironside Academy Book 4"}, {"id": 145, "title": "Sareph Black Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Sareph Black Book 1"}, {"id": 146, "title": "Sareph Black Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Sareph Black Book 2"}, {"id": 147, "title": "Sareph Black Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Sareph Black Book 3"}, {"id": 148, "title": "Sareph Black Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Sareph Black Book 4"}, {"id": 149, "title": "Corrupt Credence Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Corrupt Credence Book 1"}, {"id": 150, "title": "Corrupt Credence Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Corrupt Credence Book 2"}, {"id": 151, "title": "Corrupt Credence Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Corrupt Credence Book 3"}, {"id": 152, "title": "Masked Duet Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Masked Duet Book 1"}, {"id": 153, "title": "Masked Duet Book 2     139", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Masked Duet Book 2     139"}, {"id": 154, "title": "Mark of Stars", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Mark of Stars"}, {"id": 155, "title": "Umbra Hunters Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Umbra Hunters Book 1"}, {"id": 156, "title": "Umbra Hunters Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Umbra Hunters Book 2"}, {"id": 157, "title": "Umbra Hunters Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Umbra Hunters Book 3"}, {"id": 158, "title": "Umbra Hunters Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Umbra Hunters Book 4"}, {"id": 159, "title": "Pheromone", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pheromone"}, {"id": 160, "title": "Elemental Fae Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Elemental Fae Book 1"}, {"id": 161, "title": "Elemental Fae Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Elemental Fae Book 2"}, {"id": 162, "title": "Elemental Fae Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Elemental Fae Book 3"}, {"id": 163, "title": "Cursed Studies", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Cursed Studies"}, {"id": 164, "title": "Their Lethal Pet", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Their Lethal Pet"}, {"id": 165, "title": "Hell Fae King Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hell Fae King Book 1"}, {"id": 166, "title": "Hell Fae King Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hell Fae King Book 2"}, {"id": 167, "title": "Hell Fae King Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hell Fae King Book 3"}, {"id": 168, "title": "Hell Fae King Book 4 (June 3, 2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hell Fae King Book 4 (June 3, 2025)"}, {"id": 169, "title": "Dawn of Flames Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dawn of Flames Book 1"}, {"id": 170, "title": "Dawn of Flames Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dawn of Flames Book 2"}, {"id": 171, "title": "Dawn of Flames Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dawn of Flames Book 3"}, {"id": 172, "title": "Broken Ashes Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Broken Ashes Book 1"}, {"id": 173, "title": "Broken Ashes Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Broken Ashes Book 2"}, {"id": 174, "title": "Broken Ashes Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Broken Ashes Book 3"}, {"id": 175, "title": "Broken Ashes Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Broken Ashes Book 4"}, {"id": 176, "title": "Broken Ashes Book 5 (June 30,2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Broken Ashes Book 5 (June 30,2025)"}, {"id": 177, "title": "Broken Ashes Book 6 (June 30, 2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Broken Ashes Book 6 (June 30, 2025)"}, {"id": 178, "title": "Voiceless", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Voiceless"}, {"id": 179, "title": "Fortune Fae Academy", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fortune Fae Academy"}, {"id": 180, "title": "Silent Betrayal", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Silent Betrayal"}, {"id": 181, "title": "Imprinted Tattoos", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Imprinted Tattoos"}, {"id": 182, "title": "The Goblin Prince Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Goblin Prince Book 1"}, {"id": 183, "title": "The Goblin Prince Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Goblin Prince Book 2"}, {"id": 184, "title": "The Goblin Prince Book 3 (January 27, 2026)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Goblin Prince Book 3 (January 27, 2026)"}, {"id": 185, "title": "The Savage Six", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Savage Six"}, {"id": 186, "title": "Knight Unchained Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knight Unchained Book 1"}, {"id": 187, "title": "Knight Unchained Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knight Unchained Book 2"}, {"id": 188, "title": "Knight Unchained Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knight Unchained Book 3"}, {"id": 189, "title": "Knight Unchained Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knight Unchained Book 4"}, {"id": 190, "title": "Black Onyx Academy Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Black Onyx Academy Book 1"}, {"id": 191, "title": "Black Onyx Academy Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Black Onyx Academy Book 2"}, {"id": 192, "title": "Black Onyx Academy Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Black Onyx Academy Book 3"}, {"id": 193, "title": "Black Onyx Academy Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Black Onyx Academy Book 4"}, {"id": 194, "title": "Silver Falls University Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Silver Falls University Book 1"}, {"id": 195, "title": "Silver Falls University Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Silver Falls University Book 2"}, {"id": 196, "title": "Silver Falls University Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Silver Falls University Book 3"}, {"id": 197, "title": "Silver Falls University Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Silver Falls University Book 4"}, {"id": 198, "title": "Silver Falls University Book 5", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Silver Falls University Book 5"}, {"id": 199, "title": "Saints Academy Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Saints Academy Book 1"}, {"id": 200, "title": "Saints Academy Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Saints Academy Book 2"}, {"id": 201, "title": "Saints Academy Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Saints Academy Book 3"}, {"id": 202, "title": "Saints Axademy Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Saints Axademy Book 4"}, {"id": 203, "title": "Covet Me", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Covet Me"}, {"id": 204, "title": "The Queen of Quintessence Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Queen of Quintessence Book 1"}, {"id": 205, "title": "The Queen of Quintessence Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Queen of Quintessence Book 2"}, {"id": 206, "title": "The Queen of Quintessence Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Queen of Quintessence Book 3"}, {"id": 207, "title": "The Storm Dragons", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Storm Dragons"}, {"id": 208, "title": "Finding My Home Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Finding My Home Book 1"}, {"id": 209, "title": "Finding My Home Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Finding My Home Book 2"}, {"id": 210, "title": "Finding My Home Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Finding My Home Book 3"}, {"id": 211, "title": "Their Fated Magic Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Their Fated Magic Book 1"}, {"id": 212, "title": "Their Fated Magic Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Their Fated Magic Book 2"}, {"id": 213, "title": "Their Fated Magic Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Their Fated Magic Book 3"}, {"id": 214, "title": "Her Cursed Protectors Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Cursed Protectors Book 1"}, {"id": 215, "title": "Her Cursed Protectors Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Cursed Protectors Book 2"}, {"id": 216, "title": "Her Cursed Protectors Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Cursed Protectors Book 3"}, {"id": 217, "title": "Her Cursed Protectors Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Cursed Protectors Book 4"}, {"id": 218, "title": "The Dragon Court of Crowns Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Dragon Court of Crowns Book 1"}, {"id": 219, "title": "The Dragon Court of Crowns Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Dragon Court of Crowns Book 2"}, {"id": 220, "title": "The Dragon Court of Crowns Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Dragon Court of Crowns Book 3"}, {"id": 221, "title": "Gift From the Wing Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Gift From the Wing Book 1"}, {"id": 222, "title": "Gift From the Wing Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Gift From the Wing Book 2"}, {"id": 223, "title": "Gift From the Wing Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Gift From the Wing Book 3"}, {"id": 224, "title": "Ardent Queen Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ardent Queen Book 1"}, {"id": 225, "title": "Ardent Queen Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ardent Queen Book 2"}, {"id": 226, "title": "Shadowed Fate", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shadowed Fate"}, {"id": 227, "title": "Blood of Hercules Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood of Hercules Book 1"}, {"id": 228, "title": "Blood of Hercules Book 2 October 28, 2025", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood of Hercules Book 2 October 28, 2025"}, {"id": 229, "title": "The Mate Games Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Mate Games Book 1"}, {"id": 230, "title": "The Mate Games Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Mate Games Book 2"}, {"id": 231, "title": "The Mate Games Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Mate Games Book 3"}, {"id": 232, "title": "The Mate Games Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Mate Games Book 4"}, {"id": 233, "title": "Stalked by the Alphas", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Stalked by the Alphas"}, {"id": 234, "title": "Fractured Shadows", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fractured Shadows"}, {"id": 235, "title": "Knot Happening", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Happening"}, {"id": 236, "title": "Shadowborne Academy", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shadowborne Academy"}, {"id": 237, "title": "Blood Sugar", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood Sugar"}, {"id": 238, "title": "Pack Reject", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Reject"}, {"id": 239, "title": "Hell Rings", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hell Rings"}, {"id": 240, "title": "Witchy Games Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Witchy Games Book 1"}, {"id": 241, "title": "Witchy Games Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Witchy Games Book 2"}, {"id": 242, "title": "Witchy Games Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Witchy Games Book 3"}, {"id": 243, "title": "Witchy Games Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Witchy Games Book 4"}, {"id": 244, "title": "Demon Reform Academy Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Demon Reform Academy Book 1"}, {"id": 245, "title": "Demon Reform Academy Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Demon Reform Academy Book 2"}, {"id": 246, "title": "Shattered Illusion", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shattered Illusion"}, {"id": 247, "title": "Laid Bare", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Laid Bare"}, {"id": 248, "title": "Beautiful Betrayal October 31,2025", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Beautiful Betrayal October 31,2025"}, {"id": 249, "title": "The Ethereal Gods", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Ethereal Gods"}, {"id": 250, "title": "Greed", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Greed"}, {"id": 251, "title": "Hells Queen Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hells Queen Book 1"}, {"id": 252, "title": "Hells Queen Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hells Queen Book 2"}, {"id": 253, "title": "Hells Queen Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hells Queen Book 3"}, {"id": 254, "title": "Hells Queen Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hells Queen Book 4"}, {"id": 255, "title": "Death is Easy", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Death is Easy"}, {"id": 256, "title": "Storm of Shadows Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Storm of Shadows Book 1"}, {"id": 257, "title": "Storm of Shadows Book 2 (July 2, 2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Storm of Shadows Book 2 (July 2, 2025)"}, {"id": 258, "title": "Prodigium Academy Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Prodigium Academy Book 1"}, {"id": 259, "title": "Prodigium Academy Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Prodigium Academy Book 2"}, {"id": 260, "title": "Prodigium Academy Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Prodigium Academy Book 3"}, {"id": 261, "title": "Prodigium Academy Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Prodigium Academy Book 4"}, {"id": 262, "title": "Prodigium Academy Book 5", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Prodigium Academy Book 5"}, {"id": 263, "title": "Wolf Burned Series Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Wolf Burned Series Book 1"}, {"id": 264, "title": "Wolf Burned Series Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Wolf Burned Series Book 2"}, {"id": 265, "title": "In Ruins Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "In Ruins Book 1"}, {"id": 266, "title": "In Ruins Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "In Ruins Book 2"}, {"id": 267, "title": "In Ruins Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "In Ruins Book 3"}, {"id": 268, "title": "In Ruins Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "In Ruins Book 4"}, {"id": 269, "title": "Ruined Wolvesbane", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ruined Wolvesbane"}, {"id": 270, "title": "Cursed Wolvesbane", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Cursed Wolvesbane"}, {"id": 271, "title": "Dark Bonds Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dark Bonds Book 1"}, {"id": 272, "title": "Dark Bonds Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dark Bonds Book 2"}, {"id": 273, "title": "Half Blood Academy Complete Series (4)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Half Blood Academy Complete Series (4)"}, {"id": 274, "title": "Celestial Academy Complete Series (3)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Celestial Academy Complete Series (3)"}, {"id": 275, "title": "Dark Fae Kings Complete Series (4)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dark Fae Kings Complete Series (4)"}, {"id": 276, "title": "Dirty Little Secrets", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dirty Little Secrets"}, {"id": 277, "title": "Surge of Dragons Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Surge of Dragons Book 1"}, {"id": 278, "title": "Evelyn Maynard Series (2)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Evelyn Maynard Series (2)"}, {"id": 279, "title": "The Chosen and the Sentinels (3)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Chosen and the Sentinels (3)"}, {"id": 280, "title": "Witsec Series (4)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Witsec Series (4)"}, {"id": 281, "title": "Veiled Spirits Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Veiled Spirits Book 1"}, {"id": 282, "title": "Feral Omega", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Feral Omega"}, {"id": 283, "title": "Knot Ruined", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Ruined"}, {"id": 284, "title": "Pacific Prep Series (4)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pacific Prep Series (4)"}, {"id": 285, "title": "Depraved Sinners (2)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Depraved Sinners (2)"}, {"id": 286, "title": "Boneyard Kings Series (3) 🫶🏻", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "Boneyard Kings Series (3) 🫶🏻"}, {"id": 287, "title": "Knot Your Ex", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Your Ex"}, {"id": 288, "title": "Knot What She Seems NEED TO FINISH", "author": "", "series": "", "published_year": "", "status": "need-to-finish", "rating": "", "favorite": false, "comment": "", "source_text": "Knot What She Seems NEED TO FINISH"}, {"id": 289, "title": "Finding the Dhampir", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Finding the Dhampir"}, {"id": 290, "title": "Talk About History", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Talk About History"}, {"id": 291, "title": "Twisted Boys of NY (3)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Twisted Boys of NY (3)"}, {"id": 292, "title": "Church Series (3) DIDNT FINISH", "author": "", "series": "", "published_year": "", "status": "dnf", "rating": "", "favorite": false, "comment": "", "source_text": "Church Series (3) DIDNT FINISH"}, {"id": 293, "title": "Shadowcraft Academy (3)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shadowcraft Academy (3)"}, {"id": 294, "title": "Knotting With A Stranger", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knotting With A Stranger"}, {"id": 295, "title": "The Wolf Princes Mate", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Wolf Princes Mate"}, {"id": 296, "title": "Claimed by the Band", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Claimed by the Band"}, {"id": 297, "title": "Locked Up in Darkness", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Locked Up in Darkness"}, {"id": 298, "title": "Saving the Packs Omega", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Saving the Packs Omega"}, {"id": 299, "title": "Hot Knot Summer", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hot Knot Summer"}, {"id": 300, "title": "When She Needs Them Most", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "When She Needs Them Most"}, {"id": 301, "title": "Descendant of Chaos", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Descendant of Chaos"}, {"id": 302, "title": "Descendant of Blood", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Descendant of Blood"}, {"id": 303, "title": "Patiently Yours", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Patiently Yours"}, {"id": 304, "title": "Pack Apollo", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Apollo"}, {"id": 305, "title": "Puck Your Neighbor", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Puck Your Neighbor"}, {"id": 306, "title": "The Daymakers", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Daymakers"}, {"id": 307, "title": "Knot Her Fight", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Her Fight"}, {"id": 308, "title": "Knot Going Anywhere", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Going Anywhere"}, {"id": 309, "title": "Pack Coffey", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Coffey"}, {"id": 310, "title": "Kingdom of Flames and Flowers", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Kingdom of Flames and Flowers"}, {"id": 311, "title": "Knot Made to Break Part One", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Made to Break Part One"}, {"id": 312, "title": "The Saviors Part 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Saviors Part 1"}, {"id": 313, "title": "The Saviors Part 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Saviors Part 2"}, {"id": 314, "title": "Knot Broken", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Broken"}, {"id": 315, "title": "Knot My Sin", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot My Sin"}, {"id": 316, "title": "Deadly Sweet", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Deadly Sweet"}, {"id": 317, "title": "Pack Rivals Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Rivals Book 1"}, {"id": 318, "title": "Pack Rivals Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Rivals Book 2"}, {"id": 319, "title": "Knot Her Shot", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Her Shot"}, {"id": 320, "title": "Bitter Truths Book 1 (Sept. 30, 2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Bitter Truths Book 1 (Sept. 30, 2025)"}, {"id": 321, "title": "Knot All is Forgiven", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot All is Forgiven"}, {"id": 322, "title": "Packed in the Penalty Box", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Packed in the Penalty Box"}, {"id": 323, "title": "She’s Got Male", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "She’s Got Male"}, {"id": 324, "title": "Broken Dreams", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Broken Dreams"}, {"id": 325, "title": "Not Many Options", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Not Many Options"}, {"id": 326, "title": "Jaded Omegas", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Jaded Omegas"}, {"id": 327, "title": "Be My Salvation (3)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Be My Salvation (3)"}, {"id": 328, "title": "Cost of Courting", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Cost of Courting"}, {"id": 329, "title": "These Bonds that Unite Us Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "These Bonds that Unite Us Book 1"}, {"id": 330, "title": "These Bonds that Unite Us Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "These Bonds that Unite Us Book 2"}, {"id": 331, "title": "Pack Larsen", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Larsen"}, {"id": 332, "title": "I Think Knot", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "I Think Knot"}, {"id": 333, "title": "Knot Their Burden", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Their Burden"}, {"id": 334, "title": "Break the Ice", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Break the Ice"}, {"id": 335, "title": "Knot Your Sugar", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Your Sugar"}, {"id": 336, "title": "Knot Excused", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Excused"}, {"id": 337, "title": "Forget Me Knots and Apricots", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Forget Me Knots and Apricots"}, {"id": 338, "title": "Pack Favero", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Favero"}, {"id": 339, "title": "Unhinged Omega", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Unhinged Omega"}, {"id": 340, "title": "Beyond Repair Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Beyond Repair Book 1"}, {"id": 341, "title": "Beyond Repair Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Beyond Repair Book 2"}, {"id": 342, "title": "Knot Their Cup of Tea", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Their Cup of Tea"}, {"id": 343, "title": "The Packs Request", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Packs Request"}, {"id": 344, "title": "Puck Your Friend", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Puck Your Friend"}, {"id": 345, "title": "Met Your Mate Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Met Your Mate Book 1"}, {"id": 346, "title": "Met Your Mate Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Met Your Mate Book 2"}, {"id": 347, "title": "Heat Hesitation", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Heat Hesitation"}, {"id": 348, "title": "Pack Gamble Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Gamble Book 1"}, {"id": 349, "title": "Pack Gamble Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Gamble Book 2"}, {"id": 350, "title": "The Beta Trials Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Beta Trials Book 1"}, {"id": 351, "title": "The Beta Trials Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Beta Trials Book 2"}, {"id": 352, "title": "The Beta Trials Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Beta Trials Book 3"}, {"id": 353, "title": "The Beta Trials Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Beta Trials Book 4"}, {"id": 354, "title": "Mercenaries for Hire Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Mercenaries for Hire Book 1"}, {"id": 355, "title": "Mercenaries for Hire Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Mercenaries for Hire Book 2"}, {"id": 356, "title": "Hunted Omega", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hunted Omega"}, {"id": 357, "title": "Believe it or Knot", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Believe it or Knot"}, {"id": 358, "title": "Bound by Song", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Bound by Song"}, {"id": 359, "title": "Knot All That Glitters Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot All That Glitters Book 1"}, {"id": 360, "title": "Knot All That Glitters Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot All That Glitters Book 2"}, {"id": 361, "title": "Knot Worth Saving", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Worth Saving"}, {"id": 362, "title": "Slick", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Slick"}, {"id": 363, "title": "Ours Later", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ours Later"}, {"id": 364, "title": "Reckless Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Reckless Book 1"}, {"id": 365, "title": "Reckless Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Reckless Book 2"}, {"id": 366, "title": "Forget", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Forget"}, {"id": 367, "title": "White Rose Painted Red Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "White Rose Painted Red Book 1"}, {"id": 368, "title": "White Rose Painted Red Book 2 (January 6, 2026)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "White Rose Painted Red Book 2 (January 6, 2026)"}, {"id": 369, "title": "Haunting Adeline Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Haunting Adeline Book 1"}, {"id": 370, "title": "Haunting Adeline Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Haunting Adeline Book 2"}, {"id": 371, "title": "Royal Sins Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Royal Sins Book 1"}, {"id": 372, "title": "Royal Sins Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Royal Sins Book 2"}, {"id": 373, "title": "Royal Sins Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Royal Sins Book 3"}, {"id": 374, "title": "Royal Sins Book 4 (October 2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Royal Sins Book 4 (October 2025)"}, {"id": 375, "title": "Take All of Me", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Take All of Me"}, {"id": 376, "title": "Light of Dawn", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Light of Dawn"}, {"id": 377, "title": "Twisted Love", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Twisted Love"}, {"id": 378, "title": "Breaking Our Rules", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Breaking Our Rules"}, {"id": 379, "title": "Knot the Last Chapter", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot the Last Chapter"}, {"id": 380, "title": "Dark Mafia Prince", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dark Mafia Prince"}, {"id": 381, "title": "Believe It Or Knot", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Believe It Or Knot"}, {"id": 382, "title": "Arcanum Academy Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Arcanum Academy Book 1"}, {"id": 383, "title": "Arcanum Academy Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Arcanum Academy Book 2"}, {"id": 384, "title": "Arcanum Academy Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Arcanum Academy Book 3"}, {"id": 385, "title": "Talk to Me", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Talk to Me"}, {"id": 386, "title": "Taken by the Pack", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Taken by the Pack"}, {"id": 387, "title": "The Light in Us", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Light in Us"}, {"id": 388, "title": "Boys of Briar Hall Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Boys of Briar Hall Book 1"}, {"id": 389, "title": "Boys of Briar Hall Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Boys of Briar Hall Book 2"}, {"id": 390, "title": "Boys of Briar Hall Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Boys of Briar Hall Book 3"}, {"id": 391, "title": "Boys of Briar Hall Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Boys of Briar Hall Book 4"}, {"id": 392, "title": "Ever Marked", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ever Marked"}, {"id": 393, "title": "Ever Bound", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Ever Bound"}, {"id": 394, "title": "We Hunt the Night (November 30, 2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "We Hunt the Night (November 30, 2025)"}, {"id": 395, "title": "Heat and Deceit", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Heat and Deceit"}, {"id": 396, "title": "Queen of Spades", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Queen of Spades"}, {"id": 397, "title": "Knottily Ever After", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knottily Ever After"}, {"id": 398, "title": "Pack Poison Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Poison Book 1"}, {"id": 399, "title": "Pack Poison Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Poison Book 2"}, {"id": 400, "title": "Pack Poison Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Poison Book 3"}, {"id": 401, "title": "Marking Mia", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Marking Mia"}, {"id": 402, "title": "Drown in You", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Drown in You"}, {"id": 403, "title": "Sick Boys", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Sick Boys"}, {"id": 404, "title": "The Perfect Fit", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Perfect Fit"}, {"id": 405, "title": "Bad Moon Academy Complete Series", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Bad Moon Academy Complete Series"}, {"id": 406, "title": "Gallow Hills Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Gallow Hills Book 1"}, {"id": 407, "title": "Gallow Hills Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Gallow Hills Book 2"}, {"id": 408, "title": "Gallow Hills Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Gallow Hills Book 3"}, {"id": 409, "title": "Don’t Get Caught", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Don’t Get Caught"}, {"id": 410, "title": "Not Your Prey", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Not Your Prey"}, {"id": 411, "title": "Blind Side", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blind Side"}, {"id": 412, "title": "Defiant Beta", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Defiant Beta"}, {"id": 413, "title": "Rodeo and Juliette", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Rodeo and Juliette"}, {"id": 414, "title": "Fate of a Royal", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fate of a Royal"}, {"id": 415, "title": "Knot Without Mercy", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Without Mercy"}, {"id": 416, "title": "The Wrong Quarterback", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Wrong Quarterback"}, {"id": 417, "title": "Dylan St. James Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dylan St. James Book 1"}, {"id": 418, "title": "Dylan St. James Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dylan St. James Book 2"}, {"id": 419, "title": "One for the Money", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "One for the Money"}, {"id": 420, "title": "Two for the Show", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Two for the Show"}, {"id": 421, "title": "Dubious Match", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dubious Match"}, {"id": 422, "title": "Tempest", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Tempest"}, {"id": 423, "title": "Still Beating", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Still Beating"}, {"id": 424, "title": "The Beta Part 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Beta Part 1"}, {"id": 425, "title": "The Beta Part 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Beta Part 2"}, {"id": 426, "title": "Curse of the Sun and Stars", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Curse of the Sun and Stars"}, {"id": 427, "title": "Knot so Broken", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot so Broken"}, {"id": 428, "title": "A Knights Revenge Complete Series", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Knights Revenge Complete Series"}, {"id": 429, "title": "Her Elemental Dragons Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Elemental Dragons Book 1"}, {"id": 430, "title": "House of Omega", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "House of Omega"}, {"id": 431, "title": "Burning Bridges Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Burning Bridges Book 1"}, {"id": 432, "title": "Burning Bridges Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Burning Bridges Book 2"}, {"id": 433, "title": "Bliss and Her Idols", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Bliss and Her Idols"}, {"id": 434, "title": "Wicked Wings", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Wicked Wings"}, {"id": 435, "title": "Knot the One They Want", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot the One They Want"}, {"id": 436, "title": "Unbonded", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Unbonded"}, {"id": 437, "title": "Mave Fortune", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Mave Fortune"}, {"id": 438, "title": "Zodiac Wolves", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Zodiac Wolves"}, {"id": 439, "title": "The Hollow Alpha", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Hollow Alpha"}, {"id": 440, "title": "Triple Threat", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Triple Threat"}, {"id": 441, "title": "Death Wish", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Death Wish"}, {"id": 442, "title": "Vallaverse", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Vallaverse"}, {"id": 443, "title": "This Vow of Ours", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "This Vow of Ours"}, {"id": 444, "title": "All These Broken Parts Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "All These Broken Parts Book 1"}, {"id": 445, "title": "All These Broken Parts Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "All These Broken Parts Book 2"}, {"id": 446, "title": "Dodging Bullets", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dodging Bullets"}, {"id": 447, "title": "Her Stolen Scents", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Her Stolen Scents"}, {"id": 448, "title": "Mated to my Ex’s Alpha Uncle", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Mated to my Ex’s Alpha Uncle"}, {"id": 449, "title": "The Cursed Kingdom", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Cursed Kingdom"}, {"id": 450, "title": "Twisted Lies", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Twisted Lies"}, {"id": 451, "title": "Deadly Ties", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Deadly Ties"}, {"id": 452, "title": "The Female", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Female"}, {"id": 453, "title": "The Alpha Club", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Alpha Club"}, {"id": 454, "title": "Rescue Me", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Rescue Me"}, {"id": 455, "title": "Cherished", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Cherished"}, {"id": 456, "title": "Knot Your Sugar Rush", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Your Sugar Rush"}, {"id": 457, "title": "X’s and O’s", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "X’s and O’s"}, {"id": 458, "title": "Knot Again", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Again"}, {"id": 459, "title": "New Moon Series (3)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "New Moon Series (3)"}, {"id": 460, "title": "Amarli Wolfe Series (3)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Amarli Wolfe Series (3)"}, {"id": 461, "title": "Daisy", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Daisy"}, {"id": 462, "title": "Does it Hurt", "author": "H.D. Carlton", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Does it Hurt"}, {"id": 463, "title": "Those Savage Stars", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Those Savage Stars"}, {"id": 464, "title": "Those Forbidden Shadows", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Those Forbidden Shadows"}, {"id": 465, "title": "Those Ruthless Fates (September 22, 2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Those Ruthless Fates (September 22, 2025)"}, {"id": 466, "title": "Psycho Gods Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Psycho Gods Book 1"}, {"id": 467, "title": "Psycho Gods Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Psycho Gods Book 2"}, {"id": 468, "title": "Psycho Gods Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Psycho Gods Book 3"}, {"id": 469, "title": "Psycho Gods Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Psycho Gods Book 4"}, {"id": 470, "title": "Psycho Gods Book 5", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Psycho Gods Book 5"}, {"id": 471, "title": "Psycho Gods Book 6", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Psycho Gods Book 6"}, {"id": 472, "title": "Pack of Crooks", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack of Crooks"}, {"id": 473, "title": "Beautiful Graves", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Beautiful Graves"}, {"id": 474, "title": "Despicable", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Despicable"}, {"id": 475, "title": "A Sinful Year One", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Sinful Year One"}, {"id": 476, "title": "A Sinful Year Two", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Sinful Year Two"}, {"id": 477, "title": "A Sinful Year Three", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "A Sinful Year Three"}, {"id": 478, "title": "The Bet", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Bet"}, {"id": 479, "title": "Wild Rejected Mate Series (6)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Wild Rejected Mate Series (6)"}, {"id": 480, "title": "The Wallflower", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Wallflower"}, {"id": 481, "title": "The WildFlower", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The WildFlower"}, {"id": 482, "title": "Razing Hell Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Razing Hell Book 1"}, {"id": 483, "title": "Razing Hell Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Razing Hell Book 2"}, {"id": 484, "title": "Widow", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Widow"}, {"id": 485, "title": "Blood Bound Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood Bound Book 1"}, {"id": 486, "title": "Athica Lane", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Athica Lane"}, {"id": 487, "title": "The BlackRidge Peak Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The BlackRidge Peak Book 1"}, {"id": 488, "title": "The BlackRidge Peak Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The BlackRidge Peak Book 2"}, {"id": 489, "title": "The BlackRidge Peak Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The BlackRidge Peak Book 3"}, {"id": 490, "title": "Rabid", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Rabid"}, {"id": 491, "title": "Quiet Rage", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Quiet Rage"}, {"id": 492, "title": "Academy of the Gods Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Academy of the Gods Book 1"}, {"id": 493, "title": "Academy of the Gods Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Academy of the Gods Book 2"}, {"id": 494, "title": "Academy of the Gods Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Academy of the Gods Book 3"}, {"id": 495, "title": "Otherworld Academy Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Otherworld Academy Book 1"}, {"id": 496, "title": "Otherworld Academy Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Otherworld Academy Book 2"}, {"id": 497, "title": "Pack Next Door", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pack Next Door"}, {"id": 498, "title": "Knot Enough", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knot Enough"}, {"id": 499, "title": "The Butcher", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Butcher"}, {"id": 500, "title": "Pretty Little Tease", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pretty Little Tease"}, {"id": 501, "title": "Pretty Little Killer", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Pretty Little Killer"}, {"id": 502, "title": "Sweet Little Obsession", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Sweet Little Obsession"}, {"id": 503, "title": "Claimed by the Psychos", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Claimed by the Psychos"}, {"id": 504, "title": "The Wolves of Crescent Creek Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Wolves of Crescent Creek Book 1"}, {"id": 505, "title": "The Wolves of Crescent Creek Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Wolves of Crescent Creek Book 2"}, {"id": 506, "title": "The Wolves of Crescent Creek Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Wolves of Crescent Creek Book 3"}, {"id": 507, "title": "Devils Backbone Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Devils Backbone Book 1"}, {"id": 508, "title": "Devils Backbone Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Devils Backbone Book 2"}, {"id": 509, "title": "Devils Backbone Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Devils Backbone Book 3"}, {"id": 510, "title": "Don’t Be Scared", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Don’t Be Scared"}, {"id": 511, "title": "The Watchers Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Watchers Book 1"}, {"id": 512, "title": "The Watchers Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Watchers Book 2"}, {"id": 513, "title": "The Watchers Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Watchers Book 3"}, {"id": 514, "title": "Their Blood Queen", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Their Blood Queen"}, {"id": 515, "title": "The Empyrean Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Empyrean Book 1"}, {"id": 516, "title": "The Empyrean Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Empyrean Book 2"}, {"id": 517, "title": "The Empyrean Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Empyrean Book 3"}, {"id": 518, "title": "Blood Oath Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood Oath Book 1"}, {"id": 519, "title": "Blood Oath Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood Oath Book 2"}, {"id": 520, "title": "Blood Oath Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood Oath Book 3"}, {"id": 521, "title": "Blood Oath Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood Oath Book 4"}, {"id": 522, "title": "The Alphas Broken Oath", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Alphas Broken Oath"}, {"id": 523, "title": "Wolves Queen", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Wolves Queen"}, {"id": 524, "title": "Rejected and Regretted", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Rejected and Regretted"}, {"id": 525, "title": "Lunar Witch", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Lunar Witch"}, {"id": 526, "title": "Blood Witch", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Blood Witch"}, {"id": 527, "title": "King of Ruin", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "King of Ruin"}, {"id": 528, "title": "The Black Table", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Black Table"}, {"id": 529, "title": "The Lost Siren", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Lost Siren"}, {"id": 530, "title": "Haunt", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Haunt"}, {"id": 531, "title": "Crown of Hate", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Crown of Hate"}, {"id": 532, "title": "Fairs Fair Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fairs Fair Book 1"}, {"id": 533, "title": "Fairs Fair Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fairs Fair Book 2"}, {"id": 534, "title": "Fairs Fair Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fairs Fair Book 3"}, {"id": 535, "title": "We Tell Lies", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "We Tell Lies"}, {"id": 536, "title": "Underworld Bride Trials", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Underworld Bride Trials"}, {"id": 537, "title": "Devils Lily", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Devils Lily"}, {"id": 538, "title": "No You Hang Up", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "No You Hang Up"}, {"id": 539, "title": "Lucifer’s Wolf", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Lucifer’s Wolf"}, {"id": 540, "title": "Forsaken", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Forsaken"}, {"id": 541, "title": "Rejected Mate Academy", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Rejected Mate Academy"}, {"id": 542, "title": "His Kingdom", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "His Kingdom"}, {"id": 543, "title": "Fear the Reapers", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fear the Reapers"}, {"id": 544, "title": "Playing With Knives", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Playing With Knives"}, {"id": 545, "title": "Glass", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Glass"}, {"id": 546, "title": "Rule The Night", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Rule The Night"}, {"id": 547, "title": "The Freckled Fate Series Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Freckled Fate Series Book 1"}, {"id": 548, "title": "Glass by Kelsey G", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Glass by Kelsey G"}, {"id": 549, "title": "Demon Valley Pack Book 1 (FLOP)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Demon Valley Pack Book 1 (FLOP)"}, {"id": 550, "title": "Falling for the Billionaire Best Friend", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Falling for the Billionaire Best Friend"}, {"id": 551, "title": "There are no Saints", "author": "Sophie Lark", "series": "Sinners Duet", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "There are no Saints"}, {"id": 552, "title": "Heart Stone Mates Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Heart Stone Mates Book 1"}, {"id": 553, "title": "Heart Stone Mates Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Heart Stone Mates Book 2"}, {"id": 554, "title": "Heart Stone Mates Book", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Heart Stone Mates Book"}, {"id": 555, "title": "Owned by the Lost Boys", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Owned by the Lost Boys"}, {"id": 556, "title": "Wrong Number Right Don", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Wrong Number Right Don"}, {"id": 557, "title": "Omega Found", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Omega Found"}, {"id": 558, "title": "Taste Me", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Taste Me"}, {"id": 559, "title": "Brutal", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Brutal"}, {"id": 560, "title": "Dead of Summer", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Dead of Summer"}, {"id": 561, "title": "Bond to the Alpha", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Bond to the Alpha"}, {"id": 562, "title": "Rejected and Pregnant by the Alpha King", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Rejected and Pregnant by the Alpha King"}, {"id": 563, "title": "Vile Boys", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Vile Boys"}, {"id": 564, "title": "Never His Mate", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Never His Mate"}, {"id": 565, "title": "The Ferals Captive", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Ferals Captive"}, {"id": 566, "title": "Shattered Hearts", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shattered Hearts"}, {"id": 567, "title": "Rejected by the Alpha Heir", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Rejected by the Alpha Heir"}, {"id": 568, "title": "God of Malice🫶🏻", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "God of Malice🫶🏻"}, {"id": 569, "title": "Alphas Cursed Hidden Heir", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Alphas Cursed Hidden Heir"}, {"id": 570, "title": "Taming Seraphine", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Taming Seraphine"}, {"id": 571, "title": "King of Desire", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "King of Desire"}, {"id": 572, "title": "His Playground", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "His Playground"}, {"id": 573, "title": "The Comeback Pact", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Comeback Pact"}, {"id": 574, "title": "Death", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Death"}, {"id": 575, "title": "Hallow Hellion (Hallow Soul Dec. 10,2025)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hallow Hellion (Hallow Soul Dec. 10,2025)"}, {"id": 576, "title": "God of Pain🫶🏻", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "God of Pain🫶🏻"}, {"id": 577, "title": "God of Wrath🫶🏻", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "God of Wrath🫶🏻"}, {"id": 578, "title": "Denied", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Denied"}, {"id": 579, "title": "Devoted", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Devoted"}, {"id": 580, "title": "Snaring Emberly", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Snaring Emberly"}, {"id": 581, "title": "God of Ruin 🫶🏻", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "God of Ruin 🫶🏻"}, {"id": 582, "title": "Hitched 😒", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Hitched 😒"}, {"id": 583, "title": "King of Malice 🫤", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "King of Malice 🫤"}, {"id": 584, "title": "Scaredy Cat 🫶🏻", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "Scaredy Cat 🫶🏻"}, {"id": 585, "title": "God of Fury🫶🏻", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "God of Fury🫶🏻"}, {"id": 586, "title": "God of War 🥹", "author": "Rina Kent", "series": "Legacy of Gods", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "God of War 🥹"}, {"id": 587, "title": "Leave Me Behind🫶🏻🥹😭", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "Leave Me Behind🫶🏻🥹😭"}, {"id": 588, "title": "Shades of Ruin and Magic Book 1", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shades of Ruin and Magic Book 1"}, {"id": 589, "title": "Shades of Ruin and Magic Book 2", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shades of Ruin and Magic Book 2"}, {"id": 590, "title": "Shades of Ruin and Magic Book 3", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shades of Ruin and Magic Book 3"}, {"id": 591, "title": "Shades of Ruin and Magic Book 4", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shades of Ruin and Magic Book 4"}, {"id": 592, "title": "Shades of Ruin and Magic Book 5", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shades of Ruin and Magic Book 5"}, {"id": 593, "title": "Shades of Ruin and Magic Book 6", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Shades of Ruin and Magic Book 6"}, {"id": 594, "title": "Boys Who Hunt", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Boys Who Hunt"}, {"id": 595, "title": "Starve⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Starve⭐️⭐️⭐️⭐️"}, {"id": 596, "title": "Ruin ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Ruin ⭐️⭐️⭐️"}, {"id": 597, "title": "Delicious⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Delicious⭐️⭐️"}, {"id": 598, "title": "Creep⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 1, "favorite": false, "comment": "", "source_text": "Creep⭐️"}, {"id": 599, "title": "Better Watch Out ⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 1, "favorite": false, "comment": "", "source_text": "Better Watch Out ⭐️"}, {"id": 600, "title": "Kiss the Villian ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Kiss the Villian ⭐️⭐️⭐️⭐️⭐️"}, {"id": 601, "title": "Beauty’s Monsterous Demons ⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 1, "favorite": false, "comment": "", "source_text": "Beauty’s Monsterous Demons ⭐️"}, {"id": 602, "title": "Do You Even Hex, Bro? ⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 1, "favorite": false, "comment": "", "source_text": "Do You Even Hex, Bro? ⭐️"}, {"id": 603, "title": "Vicious ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Vicious ⭐️⭐️⭐️"}, {"id": 604, "title": "Royal Elite Book 1⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Royal Elite Book 1⭐️⭐️⭐️⭐️"}, {"id": 605, "title": "Royal Elite Book 2⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Royal Elite Book 2⭐️⭐️⭐️⭐️"}, {"id": 606, "title": "Royal Elite Book 3⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Royal Elite Book 3⭐️⭐️⭐️⭐️"}, {"id": 607, "title": "Scoring His Obsession ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Scoring His Obsession ⭐️⭐️"}, {"id": 608, "title": "Bad Bishop ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Bad Bishop ⭐️⭐️⭐️"}, {"id": 609, "title": "Honeysuckles ⭐️ wtf", "author": "", "series": "", "published_year": "", "status": "read", "rating": 1, "favorite": false, "comment": "", "source_text": "Honeysuckles ⭐️ wtf"}, {"id": 610, "title": "Till Death and Daisies Bloom ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Till Death and Daisies Bloom ⭐️⭐️⭐️"}, {"id": 611, "title": "Arranged Control ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Arranged Control ⭐️⭐️⭐️"}, {"id": 612, "title": "Unholy Nights ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Unholy Nights ⭐️⭐️⭐️"}, {"id": 613, "title": "Knot My Wonderland ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Knot My Wonderland ⭐️⭐️⭐️⭐️"}, {"id": 614, "title": "Prey Upon Me ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Prey Upon Me ⭐️⭐️⭐️"}, {"id": 615, "title": "Cruel Boy ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Cruel Boy ⭐️⭐️⭐️"}, {"id": 616, "title": "Dark Desires ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Dark Desires ⭐️⭐️⭐️⭐️"}, {"id": 617, "title": "No Promises, No Lies ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "No Promises, No Lies ⭐️⭐️⭐️⭐️⭐️"}, {"id": 618, "title": "Prize For The King 😍😍😍😍😍", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": true, "comment": "", "source_text": "Prize For The King 😍😍😍😍😍"}, {"id": 619, "title": "Fear Me, Love Me ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Fear Me, Love Me ⭐️⭐️⭐️⭐️"}, {"id": 620, "title": "Blood and Ruin ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Blood and Ruin ⭐️⭐️⭐️"}, {"id": 621, "title": "Blood Bonds ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Blood Bonds ⭐️⭐️⭐️⭐️"}, {"id": 622, "title": "Blood Claims ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Blood Claims ⭐️⭐️⭐️⭐️"}, {"id": 623, "title": "Blood Vows ⭐️⭐️⭐️⭐️ (Book 4 TBA)", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Blood Vows ⭐️⭐️⭐️⭐️ (Book 4 TBA)"}, {"id": 624, "title": "Heartless ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Heartless ⭐️⭐️⭐️"}, {"id": 625, "title": "Married with Malice ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Married with Malice ⭐️⭐️⭐️"}, {"id": 626, "title": "Cursed by Gold ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Cursed by Gold ⭐️⭐️"}, {"id": 627, "title": "Karma ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Karma ⭐️⭐️⭐️⭐️⭐️"}, {"id": 628, "title": "Wicked Price of Blood ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Wicked Price of Blood ⭐️⭐️⭐️"}, {"id": 629, "title": "Broken Breath ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Broken Breath ⭐️⭐️⭐️⭐️⭐️"}, {"id": 630, "title": "Broken Breath Book 2 ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Broken Breath Book 2 ⭐️⭐️⭐️⭐️⭐️"}, {"id": 631, "title": "A Thorn in Every Heart ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "A Thorn in Every Heart ⭐️⭐️⭐️⭐️⭐️"}, {"id": 632, "title": "Uppercut Princess Book 1 ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Uppercut Princess Book 1 ⭐️⭐️⭐️⭐️⭐️"}, {"id": 633, "title": "Uppercut Princess Book 2⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Uppercut Princess Book 2⭐️⭐️⭐️⭐️⭐️"}, {"id": 634, "title": "Uppercut Princess Book 3⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Uppercut Princess Book 3⭐️⭐️⭐️⭐️⭐️"}, {"id": 635, "title": "Uppercut Princess Book 4⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Uppercut Princess Book 4⭐️⭐️⭐️⭐️⭐️"}, {"id": 636, "title": "Cloak of the Vampire Book 1⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Cloak of the Vampire Book 1⭐️⭐️⭐️"}, {"id": 637, "title": "Cloak of the Vampire Book 2⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Cloak of the Vampire Book 2⭐️⭐️⭐️"}, {"id": 638, "title": "Indulge ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Indulge ⭐️⭐️⭐️⭐️"}, {"id": 639, "title": "Monster Under My Bed ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Monster Under My Bed ⭐️⭐️⭐️"}, {"id": 640, "title": "Bride of Death ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Bride of Death ⭐️⭐️⭐️⭐️⭐️"}, {"id": 641, "title": "Petals of Blue ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Petals of Blue ⭐️⭐️"}, {"id": 642, "title": "Bonded by Christmas ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Bonded by Christmas ⭐️⭐️⭐️⭐️"}, {"id": 643, "title": "Blood and Salt Book 1 ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Blood and Salt Book 1 ⭐️⭐️⭐️"}, {"id": 644, "title": "Blood and Salt Book 2 ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Blood and Salt Book 2 ⭐️⭐️⭐️"}, {"id": 645, "title": "Blood and Salt Book 3 ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Blood and Salt Book 3 ⭐️⭐️⭐️"}, {"id": 646, "title": "The Warrior Midwife ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "The Warrior Midwife ⭐️⭐️⭐️"}, {"id": 647, "title": "The Secrets You Keep ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "The Secrets You Keep ⭐️⭐️⭐️⭐️"}, {"id": 648, "title": "The Damorleia Series Book 1 ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Damorleia Series Book 1 ⭐️⭐️⭐️⭐️⭐️"}, {"id": 649, "title": "The Damorleia Series Book 2⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Damorleia Series Book 2⭐️⭐️⭐️⭐️⭐️"}, {"id": 650, "title": "The Damorleia Series Book 3 SPRING 2026", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "The Damorleia Series Book 3 SPRING 2026"}, {"id": 651, "title": "Rejected Mate Book 1 ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Rejected Mate Book 1 ⭐️⭐️⭐️⭐️"}, {"id": 652, "title": "Rejected Mate Book 2 ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Rejected Mate Book 2 ⭐️⭐️⭐️⭐️"}, {"id": 653, "title": "Rejected Mate Book 3 ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Rejected Mate Book 3 ⭐️⭐️⭐️⭐️"}, {"id": 654, "title": "King of Corruption ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "King of Corruption ⭐️⭐️⭐️"}, {"id": 655, "title": "The Fae King and His Assassin ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "The Fae King and His Assassin ⭐️⭐️⭐️⭐️"}, {"id": 656, "title": "Trust in the Fallen ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Trust in the Fallen ⭐️⭐️⭐️⭐️"}, {"id": 657, "title": "The Thief ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "The Thief ⭐️⭐️⭐️⭐️"}, {"id": 658, "title": "The Unseelie Kings Rebel ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "The Unseelie Kings Rebel ⭐️⭐️⭐️⭐️"}, {"id": 659, "title": "It Always Us ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "It Always Us ⭐️⭐️⭐️⭐️⭐️"}, {"id": 660, "title": "Blood and Misletoe ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Blood and Misletoe ⭐️⭐️"}, {"id": 661, "title": "Court of Winter ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Court of Winter ⭐️⭐️⭐️"}, {"id": 662, "title": "The Assassin Bride ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Assassin Bride ⭐️⭐️⭐️⭐️⭐️"}, {"id": 663, "title": "Bride of the Midnight Prince ❤️❤️❤️❤️❤️", "author": "Anastasis Blythe", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Bride of the Midnight Prince ❤️❤️❤️❤️❤️"}, {"id": 664, "title": "Merciless ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Merciless ⭐️⭐️"}, {"id": 665, "title": "Cruel Magic ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Cruel Magic ⭐️⭐️⭐️"}, {"id": 666, "title": "One Night Seduction ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "One Night Seduction ⭐️⭐️⭐️⭐️⭐️"}, {"id": 667, "title": "Malevolent King ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Malevolent King ⭐️⭐️"}, {"id": 668, "title": "Lords of Pain ⭐️⭐️⭐️", "author": "Angel Lawson, Samantha Rue", "series": "Royals of Forsyth University", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Lords of Pain ⭐️⭐️⭐️"}, {"id": 669, "title": "Their Dragon Rider Book 1 ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Their Dragon Rider Book 1 ⭐️⭐️⭐️⭐️"}, {"id": 670, "title": "Their Dragon Rider Book 2⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Their Dragon Rider Book 2⭐️⭐️⭐️⭐️"}, {"id": 671, "title": "Their Dragon Rider Book 3 ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Their Dragon Rider Book 3 ⭐️⭐️⭐️⭐️"}, {"id": 672, "title": "Keres ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Keres ⭐️⭐️⭐️⭐️"}, {"id": 673, "title": "Craving Revenge ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Craving Revenge ⭐️⭐️⭐️"}, {"id": 674, "title": "Pray for the Damned ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Pray for the Damned ⭐️⭐️"}, {"id": 675, "title": "Leukos Trilogy Book 1 ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Leukos Trilogy Book 1 ⭐️⭐️⭐️⭐️⭐️"}, {"id": 676, "title": "Leukos Trilogy Book 2 ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Leukos Trilogy Book 2 ⭐️⭐️⭐️⭐️⭐️"}, {"id": 677, "title": "Leukos Trilogy Book 3⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Leukos Trilogy Book 3⭐️⭐️⭐️⭐️⭐️"}, {"id": 678, "title": "Furore ⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 1, "favorite": false, "comment": "", "source_text": "Furore ⭐️"}, {"id": 679, "title": "Beg Me Rejected Omega ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Beg Me Rejected Omega ⭐️⭐️⭐️"}, {"id": 680, "title": "Mafia and Scars ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Mafia and Scars ⭐️⭐️⭐️⭐️⭐️"}, {"id": 681, "title": "Supernatural Curse Book 1⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Supernatural Curse Book 1⭐️⭐️⭐️⭐️"}, {"id": 682, "title": "Supernatural Curse Book 2⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Supernatural Curse Book 2⭐️⭐️⭐️⭐️"}, {"id": 683, "title": "Supernatural Curse Book 3⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Supernatural Curse Book 3⭐️⭐️⭐️⭐️"}, {"id": 684, "title": "Supernatural Curse Book 4 ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Supernatural Curse Book 4 ⭐️⭐️⭐️"}, {"id": 685, "title": "Taken by the Raider Kings ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Taken by the Raider Kings ⭐️⭐️⭐️⭐️⭐️"}, {"id": 686, "title": "Secret Babies for My Ex’s Dad ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Secret Babies for My Ex’s Dad ⭐️⭐️"}, {"id": 687, "title": "Sinful Lord ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Sinful Lord ⭐️⭐️⭐️"}, {"id": 688, "title": "The Road to Hell ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "The Road to Hell ⭐️⭐️⭐️⭐️"}, {"id": 689, "title": "The Butchers Empire ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "The Butchers Empire ⭐️⭐️"}, {"id": 690, "title": "Desired by my Ex’s Bratva Daddy⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Desired by my Ex’s Bratva Daddy⭐️⭐️"}, {"id": 691, "title": "Emberhold Academy Book 1 ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Emberhold Academy Book 1 ⭐️⭐️⭐️"}, {"id": 692, "title": "Emberhold Academy Book 2⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Emberhold Academy Book 2⭐️⭐️⭐️"}, {"id": 693, "title": "Emberhold Academy Book 3⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 1, "favorite": false, "comment": "", "source_text": "Emberhold Academy Book 3⭐️"}, {"id": 694, "title": "Emberhold Academy Book 4⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Emberhold Academy Book 4⭐️⭐️⭐️"}, {"id": 695, "title": "The Bonds That Tie Book 1❤️❤️❤️❤️❤️", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Bonds That Tie Book 1❤️❤️❤️❤️❤️"}, {"id": 696, "title": "The Bonds That Tie Book 2❤️❤️❤️❤️❤️", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Bonds That Tie Book 2❤️❤️❤️❤️❤️"}, {"id": 697, "title": "The Bonds That Tie Book 3❤️❤️❤️❤️❤️", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Bonds That Tie Book 3❤️❤️❤️❤️❤️"}, {"id": 698, "title": "The Bonds That Tie Book 4❤️❤️❤️❤️❤️", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Bonds That Tie Book 4❤️❤️❤️❤️❤️"}, {"id": 699, "title": "The Bonds That Tie Book 5❤️❤️❤️❤️❤️", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Bonds That Tie Book 5❤️❤️❤️❤️❤️"}, {"id": 700, "title": "The Bonds That Tie Book 6❤️❤️❤️❤️❤️", "author": "J. Bree", "series": "The Bonds That Tie", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "The Bonds That Tie Book 6❤️❤️❤️❤️❤️"}, {"id": 701, "title": "The Lies of Lena⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "The Lies of Lena⭐️⭐️⭐️"}, {"id": 702, "title": "Devils Foxglove ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Devils Foxglove ⭐️⭐️⭐️⭐️"}, {"id": 703, "title": "Echo ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Echo ⭐️⭐️⭐️⭐️"}, {"id": 704, "title": "Wolf Deceived ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Wolf Deceived ⭐️⭐️"}, {"id": 705, "title": "Vicious Vengeance Duet ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Vicious Vengeance Duet ⭐️⭐️⭐️⭐️"}, {"id": 706, "title": "Syndicate of Sins ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Syndicate of Sins ⭐️⭐️⭐️⭐️⭐️"}, {"id": 707, "title": "His Captive Teacher ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "His Captive Teacher ⭐️⭐️⭐️"}, {"id": 708, "title": "Dark Codes Series ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Dark Codes Series ⭐️⭐️⭐️"}, {"id": 709, "title": "Masked Bratva Daddy ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Masked Bratva Daddy ⭐️⭐️⭐️"}, {"id": 710, "title": "Artic Wolves Series ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Artic Wolves Series ⭐️⭐️⭐️"}, {"id": 711, "title": "Irish Wolves ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Irish Wolves ⭐️⭐️"}, {"id": 712, "title": "Ruthless Mate ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Ruthless Mate ⭐️⭐️⭐️"}, {"id": 713, "title": "Wicked Fae Realms Book 1 ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Wicked Fae Realms Book 1 ⭐️⭐️⭐️⭐️"}, {"id": 714, "title": "Wicked Fae Realms Book 2⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Wicked Fae Realms Book 2⭐️⭐️⭐️⭐️"}, {"id": 715, "title": "Wicked Fae Realms Book 3 ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Wicked Fae Realms Book 3 ⭐️⭐️⭐️⭐️"}, {"id": 716, "title": "The Alpha Kings Queen ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "The Alpha Kings Queen ⭐️⭐️⭐️"}, {"id": 717, "title": "Sold to the Silverfox Daddy⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Sold to the Silverfox Daddy⭐️⭐️"}, {"id": 718, "title": "Starfall Academy Book 1⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Starfall Academy Book 1⭐️⭐️⭐️⭐️"}, {"id": 719, "title": "Starfall Academy Book 2⭐️⭐️⭐️⭐️(didn’t finish)", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Starfall Academy Book 2⭐️⭐️⭐️⭐️(didn’t finish)"}, {"id": 720, "title": "Property of Necro⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Property of Necro⭐️⭐️⭐️"}, {"id": 721, "title": "Mate Abandoned By Alpha⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Mate Abandoned By Alpha⭐️⭐️⭐️"}, {"id": 722, "title": "Venom in our Vows ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Venom in our Vows ⭐️⭐️⭐️"}, {"id": 723, "title": "Cruelly Fated ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Cruelly Fated ⭐️⭐️⭐️"}, {"id": 724, "title": "Validus Vale Book 1⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Validus Vale Book 1⭐️⭐️⭐️⭐️"}, {"id": 725, "title": "Validus Vale Book 2⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Validus Vale Book 2⭐️⭐️⭐️⭐️"}, {"id": 726, "title": "Validus Vale Book 3 May 31, 2016", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Validus Vale Book 3 May 31, 2016"}, {"id": 727, "title": "Shifted Fates Series ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Shifted Fates Series ⭐️⭐️⭐️⭐️"}, {"id": 728, "title": "Chuckles ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Chuckles ⭐️⭐️⭐️⭐️⭐️"}, {"id": 729, "title": "Cruel Surprise ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Cruel Surprise ⭐️⭐️⭐️"}, {"id": 730, "title": "Her Monstrous Beasts ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Her Monstrous Beasts ⭐️⭐️⭐️⭐️⭐️"}, {"id": 731, "title": "Syndicate Princess ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Syndicate Princess ⭐️⭐️⭐️⭐️"}, {"id": 732, "title": "Syndicate Queen ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Syndicate Queen ⭐️⭐️⭐️⭐️"}, {"id": 733, "title": "Pack Kasen Series ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Pack Kasen Series ⭐️⭐️⭐️⭐️"}, {"id": 734, "title": "Captured by the Monsters⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Captured by the Monsters⭐️⭐️⭐️⭐️⭐️"}, {"id": 735, "title": "Tell Me Pucking Lies⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Tell Me Pucking Lies⭐️⭐️⭐️"}, {"id": 736, "title": "Detour ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Detour ⭐️⭐️⭐️"}, {"id": 737, "title": "Brittle Heart Duet ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Brittle Heart Duet ⭐️⭐️⭐️⭐️"}, {"id": 738, "title": "Lycan Kings Second Chance Pregnant Runaway Mate ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Lycan Kings Second Chance Pregnant Runaway Mate ⭐️⭐️⭐️"}, {"id": 739, "title": "Veilblood Academy Series ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Veilblood Academy Series ⭐️⭐️⭐️⭐️"}, {"id": 740, "title": "Fated Mates of Shadowbone Academy September 26, 2026", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Fated Mates of Shadowbone Academy September 26, 2026"}, {"id": 741, "title": "Forged by Blood ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Forged by Blood ⭐️⭐️⭐️"}, {"id": 742, "title": "Broken Mate ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Broken Mate ⭐️⭐️"}, {"id": 743, "title": "Picking Feral June 30, 2026", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Picking Feral June 30, 2026"}, {"id": 744, "title": "Brick stone Academy ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Brick stone Academy ⭐️⭐️⭐️"}, {"id": 745, "title": "Empire of Flames and Thorns ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Empire of Flames and Thorns ⭐️⭐️"}, {"id": 746, "title": "Oath of Betrayal ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Oath of Betrayal ⭐️⭐️⭐️"}, {"id": 747, "title": "The Rose Witch ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "The Rose Witch ⭐️⭐️⭐️"}, {"id": 748, "title": "Nightshades ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Nightshades ⭐️⭐️"}, {"id": 749, "title": "Monarchs of Hell ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Monarchs of Hell ⭐️⭐️⭐️⭐️"}, {"id": 750, "title": "Your Blade, My Back ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Your Blade, My Back ⭐️⭐️⭐️"}, {"id": 751, "title": "Your Knife, My Heart ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Your Knife, My Heart ⭐️⭐️⭐️⭐️"}, {"id": 752, "title": "Blood Claimed ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Blood Claimed ⭐️⭐️"}, {"id": 753, "title": "Monster Mansion ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Monster Mansion ⭐️⭐️⭐️⭐️"}, {"id": 754, "title": "The Gatekeeper ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "The Gatekeeper ⭐️⭐️"}, {"id": 755, "title": "Monsters After Dark Series⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Monsters After Dark Series⭐️⭐️⭐️"}, {"id": 756, "title": "The Tallest Tower ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "The Tallest Tower ⭐️⭐️⭐️"}, {"id": 757, "title": "Cold Blooded Alpha ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Cold Blooded Alpha ⭐️⭐️⭐️"}, {"id": 758, "title": "Hot Blooded Alpha ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Hot Blooded Alpha ⭐️⭐️⭐️"}, {"id": 759, "title": "Rejected Pregnant and Exiled Lycan Kings Mate ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Rejected Pregnant and Exiled Lycan Kings Mate ⭐️⭐️⭐️"}, {"id": 760, "title": "Dark Rejection ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Dark Rejection ⭐️⭐️"}, {"id": 761, "title": "Mated to the Alpha Squad🤨🤨", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Mated to the Alpha Squad🤨🤨"}, {"id": 762, "title": "Satin Hate ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Satin Hate ⭐️⭐️⭐️"}, {"id": 763, "title": "Beautifully Wounded Series ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Beautifully Wounded Series ⭐️⭐️"}, {"id": 764, "title": "Winter Solstice Mates Series ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Winter Solstice Mates Series ⭐️⭐️⭐️"}, {"id": 765, "title": "Their Pretty Little Monster⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Their Pretty Little Monster⭐️⭐️⭐️"}, {"id": 766, "title": "Veiled Flames Series (April 10,2026) ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Veiled Flames Series (April 10,2026) ⭐️⭐️⭐️⭐️"}, {"id": 767, "title": "Devine Bonds Series ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Devine Bonds Series ⭐️⭐️⭐️"}, {"id": 768, "title": "Syndicate of the Legion Series ⭐️⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 5, "favorite": false, "comment": "", "source_text": "Syndicate of the Legion Series ⭐️⭐️⭐️⭐️⭐️"}, {"id": 769, "title": "Trailer Park Princess ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Trailer Park Princess ⭐️⭐️"}, {"id": 770, "title": "Painted in Shadows ⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 1, "favorite": false, "comment": "", "source_text": "Painted in Shadows ⭐️"}, {"id": 771, "title": "Wicked Little Tricks ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Wicked Little Tricks ⭐️⭐️⭐️"}, {"id": 772, "title": "Kings of Deception ⭐️⭐️🫠 (Shit Ending)", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Kings of Deception ⭐️⭐️🫠 (Shit Ending)"}, {"id": 773, "title": "Featherstone Academy ⭐️⭐️⭐️ (DNF)", "author": "", "series": "", "published_year": "", "status": "dnf", "rating": 3, "favorite": false, "comment": "", "source_text": "Featherstone Academy ⭐️⭐️⭐️ (DNF)"}, {"id": 774, "title": "Knot That Pucker ⭐️⭐️ (No true plot)", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Knot That Pucker ⭐️⭐️ (No true plot)"}, {"id": 775, "title": "Angels & Sinners Duet ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Angels & Sinners Duet ⭐️⭐️⭐️⭐️"}, {"id": 776, "title": "Black Ties and White Lies ❤️❤️❤️❤️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Black Ties and White Lies ❤️❤️❤️❤️"}, {"id": 777, "title": "Rogue Games ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Rogue Games ⭐️⭐️⭐️"}, {"id": 778, "title": "Sanctified Echoes (DNF)", "author": "", "series": "", "published_year": "", "status": "dnf", "rating": "", "favorite": false, "comment": "", "source_text": "Sanctified Echoes (DNF)"}, {"id": 779, "title": "The Weakest Wolf ⭐️⭐️⭐️ (Bit confusing)", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "The Weakest Wolf ⭐️⭐️⭐️ (Bit confusing)"}, {"id": 780, "title": "Stolen Shadows (DNF) shitty", "author": "", "series": "", "published_year": "", "status": "dnf", "rating": "", "favorite": false, "comment": "", "source_text": "Stolen Shadows (DNF) shitty"}, {"id": 781, "title": "Bargain with the Demon King ⭐️⭐️⭐️😂", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Bargain with the Demon King ⭐️⭐️⭐️😂"}, {"id": 782, "title": "Knotting Cinderella 🤮🤮🤮🤮 GAY", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Knotting Cinderella 🤮🤮🤮🤮 GAY"}, {"id": 783, "title": "A Debt of Ice and Embers ⭐️⭐️ (Depressing)", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "A Debt of Ice and Embers ⭐️⭐️ (Depressing)"}, {"id": 784, "title": "Demonic Division ⭐️⭐️ (Ick)", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Demonic Division ⭐️⭐️ (Ick)"}, {"id": 785, "title": "Ruthless Ashes ⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 3, "favorite": false, "comment": "", "source_text": "Ruthless Ashes ⭐️⭐️⭐️"}, {"id": 786, "title": "Ink Me Three Times ⭐️⭐️⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 4, "favorite": false, "comment": "", "source_text": "Ink Me Three Times ⭐️⭐️⭐️⭐️"}, {"id": 787, "title": "Reaper Academy ⭐️⭐️", "author": "", "series": "", "published_year": "", "status": "read", "rating": 2, "favorite": false, "comment": "", "source_text": "Reaper Academy ⭐️⭐️"}, {"id": 788, "title": "Veilborn Academy (November 2026)", "author": "", "series": "", "published_year": "", "status": "read", "rating": "", "favorite": false, "comment": "", "source_text": "Veilborn Academy (November 2026)"}];
+const STORAGE_KEY = "dylan-book-tracker-repo-v3";
+const JSON_CANDIDATES = [
+  "./dylan_books_partially_filled.json",
+  "./books.json",
+  "./book-tracker.json",
+  "./data/books.json",
+  "./data/book-tracker.json",
+  "./jazzy-books.json"
+];
+const defaultBooks = [];
 
-let books = loadBooks();
+let books = [];
+let lastRepoPath = null;
 
-function loadBooks() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return structuredClone(defaultBooks);
-  try {
-    const parsed = JSON.parse(saved);
-    return Array.isArray(parsed) ? parsed : structuredClone(defaultBooks);
-  } catch {
-    return structuredClone(defaultBooks);
+function banner(msg, isError = false) {
+  const el = document.getElementById("loadBanner");
+  el.textContent = msg;
+  el.classList.toggle("error", !!isError);
+}
+
+function normalizeBook(book, fallbackId) {
+  return {
+    id: Number(book.id) || fallbackId,
+    title: book.title || "",
+    author: book.author || "",
+    series: book.series || "",
+    published_year: book.published_year || book.year || "",
+    status: book.status || "read",
+    rating: book.rating === 0 ? 0 : (book.rating || ""),
+    favorite: !!book.favorite,
+    comment: book.comment || "",
+    source_text: book.source_text || book.title || ""
+  };
+}
+
+function normalizeIncoming(data) {
+  const incoming = Array.isArray(data) ? data : data && Array.isArray(data.books) ? data.books : null;
+  if (!incoming) return null;
+  return incoming.map((book, index) => normalizeBook(book, index + 1));
+}
+
+async function fetchRepoBooks() {
+  for (const path of JSON_CANDIDATES) {
+    try {
+      const res = await fetch(path, { cache: "no-store" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const normalized = normalizeIncoming(data);
+      if (normalized && normalized.length) {
+        lastRepoPath = path;
+        return normalized;
+      }
+    } catch (err) {}
   }
+  return null;
+}
+
+async function loadBooks() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      const normalized = normalizeIncoming(parsed);
+      if (normalized && normalized.length) {
+        banner("Loaded saved local version.");
+        return normalized;
+      }
+    } catch (err) {}
+  }
+
+  const repoBooks = await fetchRepoBooks();
+  if (repoBooks && repoBooks.length) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(repoBooks));
+    banner(`Loaded ${repoBooks.length} books from ${lastRepoPath}.`);
+    return repoBooks;
+  }
+
+  banner("Could not find the repo JSON. Your repo file appears to be named dylan_books_partially_filled.json and should be in the same folder as index.html.", true);
+  return structuredClone(defaultBooks);
 }
 
 function saveBooks() {
@@ -573,7 +403,13 @@ function saveBooks() {
 }
 
 function escapeHtml(str) {
-  return String(str || "").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  return String(str || "").replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
 }
 
 function updateClock() {
@@ -608,6 +444,7 @@ function getFilteredBooks() {
     if (q && !blob.includes(q)) return false;
     if (statusFilter !== "all" && (book.status || "read") !== statusFilter) return false;
     if (favoriteFilter === "favorites" && !book.favorite) return false;
+
     if (ratingFilter !== "all") {
       const r = Number(book.rating || 0);
       if (ratingFilter === "0") {
@@ -649,6 +486,7 @@ function render() {
     const meta = [book.author, book.series, book.published_year].filter(Boolean).join(" • ");
     const rateText = book.rating ? `${book.rating}★` : "Unrated";
     const statusText = (book.status || "read").replaceAll("-", " ");
+
     return `
       <div class="bookRow">
         <div class="bookHead" data-toggle="${book.id}">
@@ -715,7 +553,7 @@ function render() {
 function updateBook(id, patch) {
   const idx = books.findIndex(b => b.id === id);
   if (idx === -1) return;
-  books[idx] = {...books[idx], ...patch};
+  books[idx] = { ...books[idx], ...patch };
   saveBooks();
 }
 
@@ -736,7 +574,7 @@ document.addEventListener("click", (e) => {
     const id = Number(star.dataset.book);
     const value = Number(star.dataset.star);
     const book = books.find(b => b.id === id);
-    updateBook(id, {rating: Number(book.rating || 0) === value ? "" : value});
+    updateBook(id, { rating: Number(book.rating || 0) === value ? "" : value });
     render();
     return;
   }
@@ -746,19 +584,18 @@ document.addEventListener("click", (e) => {
     e.stopPropagation();
     const id = Number(fav.dataset.id);
     const book = books.find(b => b.id === id);
-    updateBook(id, {favorite: !book.favorite});
+    updateBook(id, { favorite: !book.favorite });
     render();
-    return;
   }
 });
 
 document.addEventListener("input", (e) => {
   const id = Number(e.target.dataset.id);
   if (id) {
-    if (e.target.classList.contains("js-author")) updateBook(id, {author: e.target.value});
-    if (e.target.classList.contains("js-series")) updateBook(id, {series: e.target.value});
-    if (e.target.classList.contains("js-year")) updateBook(id, {published_year: e.target.value});
-    if (e.target.classList.contains("js-comment")) updateBook(id, {comment: e.target.value});
+    if (e.target.classList.contains("js-author")) updateBook(id, { author: e.target.value });
+    if (e.target.classList.contains("js-series")) updateBook(id, { series: e.target.value });
+    if (e.target.classList.contains("js-year")) updateBook(id, { published_year: e.target.value });
+    if (e.target.classList.contains("js-comment")) updateBook(id, { comment: e.target.value });
   }
   if (e.target.id === "search") render();
 });
@@ -766,7 +603,7 @@ document.addEventListener("input", (e) => {
 document.addEventListener("change", (e) => {
   const id = Number(e.target.dataset.id);
   if (id && e.target.classList.contains("js-status")) {
-    updateBook(id, {status: e.target.value});
+    updateBook(id, { status: e.target.value });
     render();
     return;
   }
@@ -779,26 +616,31 @@ document.getElementById("addBtn").addEventListener("click", () => {
     alert("Add a title first.");
     return;
   }
+
   const nextId = books.length ? Math.max(...books.map(b => Number(b.id) || 0)) + 1 : 1;
-  books.unshift({
+
+  books.push({
     id: nextId,
     title,
     author: document.getElementById("newAuthor").value.trim(),
     series: document.getElementById("newSeries").value.trim(),
     published_year: document.getElementById("newYear").value.trim(),
     status: "read",
-    rating: "",
+    rating: document.getElementById("newRating").value ? Number(document.getElementById("newRating").value) : "",
     favorite: false,
     comment: "",
     source_text: title
   });
+
   saveBooks();
-  ["newTitle","newAuthor","newSeries","newYear"].forEach(id => document.getElementById(id).value = "");
+  ["newTitle","newAuthor","newSeries","newYear","newRating"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
   render();
 });
 
 document.getElementById("exportBtn").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(books, null, 2)], {type: "application/json"});
+  const blob = new Blob([JSON.stringify(books, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -812,24 +654,48 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
   if (!file) return;
   try {
     const text = await file.text();
-    const data = JSON.parse(text);
-    const incoming = Array.isArray(data) ? data : data.books;
-    if (!Array.isArray(incoming)) throw new Error();
-    books = incoming;
+    const parsed = JSON.parse(text);
+    const normalized = normalizeIncoming(parsed);
+    if (!normalized) throw new Error();
+    books = normalized;
     saveBooks();
     render();
+    banner(`Imported ${books.length} books from file.`);
     alert("Import complete.");
   } catch {
     alert("That file could not be imported.");
   }
 });
 
-document.getElementById("resetBtn").addEventListener("click", () => {
-  const ok = confirm("Reset everything back to the preloaded JSON?");
-  if (!ok) return;
-  books = structuredClone(defaultBooks);
-  saveBooks();
-  render();
+document.getElementById("reloadRepoBtn").addEventListener("click", async () => {
+  const repoBooks = await fetchRepoBooks();
+  if (repoBooks && repoBooks.length) {
+    books = repoBooks;
+    saveBooks();
+    render();
+    banner(`Reloaded ${books.length} books from ${lastRepoPath}.`);
+    alert("Repo JSON reloaded.");
+  } else {
+    banner("Still could not find repo JSON. Make sure dylan_books_partially_filled.json is in the same folder as index.html.", true);
+    alert("Repo JSON was not found.");
+  }
+});
+
+document.getElementById("clearLocalBtn").addEventListener("click", async () => {
+  localStorage.removeItem(STORAGE_KEY);
+  const repoBooks = await fetchRepoBooks();
+  if (repoBooks && repoBooks.length) {
+    books = repoBooks;
+    saveBooks();
+    render();
+    banner(`Cleared local cache and reloaded ${books.length} books from ${lastRepoPath}.`);
+    alert("Local cache cleared.");
+  } else {
+    books = structuredClone(defaultBooks);
+    render();
+    banner("Local cache cleared, but repo JSON was not found.", true);
+    alert("Local cache cleared, but repo JSON still was not found.");
+  }
 });
 
 const menuBtn = document.getElementById("menuBtn");
@@ -842,9 +708,13 @@ document.addEventListener("click", (e) => {
   if (!menu.contains(e.target) && e.target !== menuBtn) menu.classList.remove("open");
 });
 
-updateClock();
-setInterval(updateClock, 1000);
-render();
+async function init() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  books = await loadBooks();
+  render();
+}
+init();
 </script>
 </body>
 </html>
