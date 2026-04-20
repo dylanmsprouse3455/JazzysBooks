@@ -5,362 +5,221 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dylan Book Tracker</title>
 <style>
-:root {
-  --bg: #f8fbff;
-  --panel: rgba(255,255,255,.92);
-  --panel-2: #f3f7ff;
-  --panel-3: #edf3ff;
-  --line: #dfe9ff;
-  --text: #1e2a3a;
-  --muted: #6d7b93;
-  --accent: #86aefc;
-  --accent-2: #b9d0ff;
-  --accent-3: #dce8ff;
-  --pink: #ffd9e8;
-  --pink-deep: #f4a8c6;
-  --shadow: 0 20px 50px rgba(90, 122, 191, .12);
+:root{
+  --bg:#f7fbff;
+  --bg2:#eef6ff;
+  --panel:rgba(255,255,255,.88);
+  --panel-2:#f6fbff;
+  --panel-3:#eaf4ff;
+  --line:#d9e8fb;
+  --text:#0f1728;
+  --muted:#6f86a6;
+  --accent:#7cc6ff;
+  --accent-2:#a88cff;
+  --accent-3:#dff1ff;
+  --good:#e8fff4;
+  --pink:#ffe8f3;
+  --shadow:0 18px 50px rgba(86,132,201,.12);
+  --radius-xl:30px;
+  --radius-lg:22px;
+  --radius-md:16px;
 }
-* { box-sizing: border-box; }
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background: radial-gradient(circle at top left, #ffffff 0%, #f7fbff 42%, #eef5ff 100%);
-  color: var(--text);
+*{box-sizing:border-box}
+html,body{
+  margin:0;padding:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at top left,#ffffff 0%,#f7fbff 35%,#eef6ff 100%);
 }
-body { padding: 16px; }
-.wrap { max-width: 1180px; margin: 0 auto; }
-.top, .addBox, .list {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 32px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(12px);
+body{padding:18px}
+.wrap{max-width:1200px;margin:0 auto}
+.top,.addBox,.list{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px);
 }
-.top {
-  padding: 22px;
-  margin-bottom: 16px;
+.top{
+  padding:22px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
 }
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+.top::before{
+  content:"";
+  position:absolute;
+  width:320px;height:320px;border-radius:999px;
+  background:radial-gradient(circle, rgba(124,198,255,.22), rgba(168,140,255,.10), transparent 70%);
+  top:-120px;right:-100px;
+  pointer-events:none;
 }
-.headline {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.topbar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  position:relative;
+  z-index:1;
 }
-.title {
-  margin: 0;
-  font-size: clamp(30px, 5vw, 46px);
-  line-height: .95;
-  letter-spacing: -.05em;
-  font-weight: 850;
+.headline{display:flex;flex-direction:column;gap:8px;min-width:0}
+.title{
+  margin:0;
+  font-size:clamp(30px,5vw,48px);
+  line-height:.94;
+  font-weight:850;
+  letter-spacing:-.05em;
 }
-.sub {
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.35;
+.sub{color:var(--muted);font-size:14px;line-height:1.4}
+.datetime{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  width:fit-content;
+  background:linear-gradient(180deg,#fff,#f5fbff);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:10px 14px;
+  color:var(--muted);
+  font-size:13px;
 }
-.datetime {
-  width: fit-content;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, #fff, var(--panel-2));
-  color: var(--muted);
-  font-size: 13px;
+.menuWrap{position:relative}
+.menuBtn{
+  width:48px;height:48px;border-radius:16px;border:1px solid var(--line);
+  background:linear-gradient(180deg,#fff,#f4f9ff);
+  color:var(--text);cursor:pointer;font-size:22px;box-shadow:0 8px 20px rgba(86,132,201,.10);
 }
-.menuWrap { position: relative; }
-.menuBtn {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, #fff, var(--panel-2));
-  color: var(--text);
-  cursor: pointer;
-  font-size: 22px;
-  box-shadow: 0 10px 24px rgba(134,174,252,.14);
+.menu{
+  position:absolute;top:58px;right:0;width:250px;background:rgba(255,255,255,.96);
+  border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+  padding:8px;display:none;z-index:40;backdrop-filter:blur(10px);
 }
-.menu {
-  position: absolute;
-  right: 0;
-  top: 58px;
-  width: 230px;
-  padding: 8px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,.97);
-  box-shadow: var(--shadow);
-  display: none;
-  z-index: 40;
+.menu.open{display:block}
+.menu button,.menu label{
+  display:flex;width:100%;align-items:center;gap:10px;padding:12px 12px;border:0;
+  background:transparent;border-radius:14px;cursor:pointer;color:var(--text);font:inherit;
 }
-.menu.open { display: block; }
-.menu button, .menu label {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border: 0;
-  background: transparent;
-  border-radius: 14px;
-  cursor: pointer;
-  font: inherit;
-  color: var(--text);
+.menu button:hover,.menu label:hover{background:var(--panel-2)}
+.stats{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px;
+  position:relative;z-index:1;
 }
-.menu button:hover, .menu label:hover { background: var(--panel-2); }
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+.stat{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(240,247,255,.92));
+  border:1px solid var(--line);border-radius:24px;padding:18px 16px;min-width:0;
+  box-shadow:0 10px 24px rgba(86,132,201,.08);
 }
-.stat {
-  position: relative;
-  overflow: hidden;
-  padding: 18px 16px;
-  border-radius: 26px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, #ffffff, var(--panel-2));
+.stat::after{
+  content:"";position:absolute;inset:auto -24px -24px auto;width:90px;height:90px;border-radius:999px;
+  background:rgba(124,198,255,.18);
 }
-.stat::after {
-  content: "";
-  position: absolute;
-  right: -24px;
-  bottom: -24px;
-  width: 88px;
-  height: 88px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--accent-3), var(--pink));
-  opacity: .65;
+.num{
+  position:relative;z-index:1;font-size:clamp(24px,4vw,36px);font-weight:850;letter-spacing:-.05em;line-height:1;
 }
-.num {
-  position: relative;
-  z-index: 1;
-  font-size: clamp(24px, 4vw, 34px);
-  font-weight: 900;
-  letter-spacing: -.05em;
-  line-height: 1;
+.lab{position:relative;z-index:1;color:var(--muted);font-size:12px;margin-top:6px}
+.controls{
+  display:grid;grid-template-columns:minmax(0,1.7fr) repeat(3,minmax(0,.85fr));
+  gap:10px;margin-top:16px;position:relative;z-index:1;
 }
-.lab {
-  position: relative;
-  z-index: 1;
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 12px;
+.control input,.control select,
+.addGrid input,.addGrid select,.detailGrid input,.detailGrid select,textarea{
+  width:100%;appearance:none;border:1px solid var(--line);border-radius:18px;background:#fff;
+  padding:13px 15px;color:var(--text);outline:none;font:inherit;
 }
-.controls {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, .8fr));
-  gap: 10px;
-  margin-top: 16px;
+.control input:focus,.control select:focus,
+.addGrid input:focus,.addGrid select:focus,
+.detailGrid input:focus,.detailGrid select:focus,textarea:focus{
+  border-color:#9cd4ff;box-shadow:0 0 0 4px rgba(124,198,255,.16);
 }
-.control input, .control select, .addGrid input, .addGrid select, .detailGrid input, .detailGrid select, textarea {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
-  color: var(--text);
-  padding: 12px 14px;
-  outline: none;
-  font: inherit;
+.addBox{padding:18px;margin-bottom:16px}
+.addTop{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.addTitle{font-size:18px;font-weight:800;letter-spacing:-.02em}
+.addGrid{
+  display:grid;
+  grid-template-columns:1.6fr 1fr 1fr 120px 140px auto;
+  gap:10px;
+  margin-top:12px;
 }
-.control input:focus, .control select:focus, .addGrid input:focus, .addGrid select:focus, .detailGrid input:focus, .detailGrid select:focus, textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(134,174,252,.16);
+button,input,select,textarea{font:inherit}
+button.primary{
+  border:1px solid #78bfff;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;border-radius:16px;padding:11px 14px;cursor:pointer;font-weight:800;
+  box-shadow:0 14px 24px rgba(124,198,255,.25);
 }
-.addBox {
-  padding: 18px;
-  margin-bottom: 16px;
+.list{overflow:hidden}
+.bookRow{border-top:1px solid #e7f0fb}
+.bookRow:first-child{border-top:0}
+.bookHead{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;cursor:pointer;
+  transition:background .18s ease;
 }
-.addTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
+.bookHead:hover{background:rgba(236,245,255,.75)}
+.bookLeft{min-width:0;display:flex;align-items:center;gap:12px}
+.chev{
+  width:34px;height:34px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--panel-2);border:1px solid var(--line);color:var(--muted);flex:0 0 auto;font-weight:700;
 }
-.addTitle {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -.02em;
+.bookTitle{font-size:15px;font-weight:800;line-height:1.28;letter-spacing:-.01em}
+.bookMeta{color:var(--muted);font-size:12px;margin-top:4px}
+.rightBits{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#f6fbff;
+  color:var(--muted);border-radius:999px;padding:7px 10px;font-size:12px;white-space:nowrap;
 }
-.addGrid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 110px 130px 130px auto;
-  gap: 10px;
-  margin-top: 12px;
+.pill.fav{background:var(--pink);color:#b85685;border-color:#f8c6de}
+.pill.rate{background:#eef8ff;color:#5181aa;border-color:#cfe5fb}
+.details{
+  display:none;padding:0 18px 18px 18px;border-top:1px dashed var(--line);
+  background:linear-gradient(180deg,rgba(252,254,255,.98),rgba(244,249,255,.98));
 }
-button.primary, .softBtn, .starBtn, .favBtn {
-  font: inherit;
+.details.open{display:block}
+.detailGrid{
+  display:grid;grid-template-columns:1fr 1fr 120px 160px;gap:10px;padding-top:14px;
 }
-button.primary {
-  border: 1px solid #7ea7fb;
-  background: linear-gradient(180deg, #9dc0ff, #7ea7fb);
-  color: white;
-  border-radius: 18px;
-  padding: 12px 14px;
-  cursor: pointer;
-  font-weight: 800;
-  box-shadow: 0 14px 26px rgba(126,167,251,.24);
+.full{margin-top:10px}
+.smallLab{color:var(--muted);font-size:12px;margin-bottom:6px}
+textarea{min-height:100px;resize:vertical}
+.starRow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.starBtn,.favBtn,.softBtn{
+  height:40px;min-width:40px;padding:0 12px;border-radius:14px;border:1px solid var(--line);background:#fff;cursor:pointer;
 }
-.footerNote {
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 12px;
+.starBtn.active{background:#fff7d9;border-color:#f1d97b}
+.favBtn.active{background:var(--pink);border-color:#f3bad3}
+.rowActions{display:flex;gap:10px;align-items:flex-end;margin-top:12px;flex-wrap:wrap}
+.empty{padding:38px 18px;color:var(--muted);text-align:center}
+.footerNote{color:var(--muted);font-size:12px;margin-top:12px;padding-left:2px}
+.banner{
+  margin-top:12px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:linear-gradient(180deg,#f4fbff,#edf7ff);
+  border:1px solid var(--line);
+  color:var(--muted);
+  font-size:13px;
 }
-.list { overflow: hidden; }
-.bookRow { border-top: 1px solid var(--line); }
-.bookRow:first-child { border-top: 0; }
-.bookHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 16px 18px;
-  cursor: pointer;
-  transition: background .18s ease;
+.banner.error{
+  background:linear-gradient(180deg,#fff7fb,#fff1f7);
+  border-color:#f3d4e1;
+  color:#a46383;
 }
-.bookHead:hover { background: rgba(237,243,255,.55); }
-.bookLeft {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+@media (max-width:980px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .controls{grid-template-columns:1fr 1fr}
+  .addGrid{grid-template-columns:1fr}
+  .detailGrid{grid-template-columns:1fr}
 }
-.chev {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--panel-2);
-  border: 1px solid var(--line);
-  color: var(--muted);
-  flex: 0 0 auto;
-  font-weight: 800;
-}
-.bookTitle {
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.28;
-  letter-spacing: -.01em;
-}
-.bookMeta {
-  color: var(--muted);
-  font-size: 12px;
-  margin-top: 4px;
-}
-.rightBits {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--muted);
-  border-radius: 999px;
-  padding: 7px 10px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-.pill.fav {
-  background: #fff2f7;
-  border-color: #ffd7e5;
-  color: #b85d82;
-}
-.pill.rate {
-  background: #f6f9ff;
-  border-color: #dfe9ff;
-  color: #5e79a8;
-}
-.details {
-  display: none;
-  padding: 0 18px 18px;
-  border-top: 1px dashed var(--line);
-  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(243,247,255,.96));
-}
-.details.open { display: block; }
-.detailGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 120px 160px;
-  gap: 10px;
-  padding-top: 14px;
-}
-.smallLab {
-  color: var(--muted);
-  font-size: 12px;
-  margin-bottom: 6px;
-}
-.rowActions {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-.starRow {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.starBtn, .favBtn, .softBtn {
-  height: 40px;
-  min-width: 40px;
-  padding: 0 12px;
-  border-radius: 14px;
-  border: 1px solid var(--line);
-  background: white;
-  cursor: pointer;
-}
-.starBtn.active {
-  background: #fff3f8;
-  border-color: #f4c7d9;
-}
-.favBtn.active {
-  background: #fff3f8;
-  border-color: #f4c7d9;
-}
-.full { margin-top: 10px; }
-textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-.empty {
-  padding: 40px 18px;
-  text-align: center;
-  color: var(--muted);
-}
-.hidden { display: none; }
-@media (max-width: 1080px) {
-  .addGrid { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 980px) {
-  .stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  .controls { grid-template-columns: 1fr 1fr; }
-  .detailGrid { grid-template-columns: 1fr; }
-}
-@media (max-width: 640px) {
-  body { padding: 12px; }
-  .top, .addBox, .list { border-radius: 24px; }
-  .stats { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
-  .num { font-size: 19px; }
-  .lab { font-size: 10px; }
-  .controls, .addGrid { grid-template-columns: 1fr; }
-  .bookHead { align-items: flex-start; }
-  .rightBits { width: 100%; justify-content: flex-start; }
+@media (max-width:640px){
+  body{padding:12px}
+  .top,.addBox,.list{border-radius:24px}
+  .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+  .num{font-size:19px}
+  .lab{font-size:10px}
+  .controls{grid-template-columns:1fr}
+  .bookHead{align-items:flex-start}
+  .rightBits{width:100%;justify-content:flex-start}
 }
 </style>
 </head>
@@ -369,22 +228,22 @@ textarea {
   <section class="top">
     <div class="topbar">
       <div class="headline">
-        <h1 class="title">Book Tracker</h1>
-        <div class="sub">It now checks your repo for the preload JSON again, keeps newer books at the bottom, and lets you rate while adding.</div>
+        <h1 class="title">Jazzy’s Books</h1>
+        <div class="sub">DS Digital Designs style. Pulls from your GitHub JSON first, then saves your edits locally.</div>
         <div class="datetime">
           <span id="todayDate">Loading date…</span>
           <span>•</span>
           <span id="todayTime">Loading time…</span>
         </div>
-        <div id="sourceNote" class="sub hidden"></div>
       </div>
       <div class="menuWrap">
         <button id="menuBtn" class="menuBtn" aria-label="Menu">⋯</button>
         <div id="menu" class="menu">
+          <button id="reloadRepoBtn">Reload from repo JSON</button>
+          <button id="clearLocalBtn">Clear local cache</button>
           <button id="exportBtn">Export JSON</button>
           <label for="importFile">Import JSON</label>
           <input id="importFile" type="file" accept="application/json" style="display:none">
-          <button id="resetBtn">Reset to preload</button>
         </div>
       </div>
     </div>
@@ -425,13 +284,15 @@ textarea {
         </select>
       </div>
     </div>
+
+    <div id="loadBanner" class="banner">Loading…</div>
   </section>
 
   <section class="addBox">
     <div class="addTop">
       <div>
         <div class="addTitle">Add a book</div>
-        <div class="sub">Fast entry with rating built in.</div>
+        <div class="sub">New books go to the bottom. You can rate them before you add them.</div>
       </div>
     </div>
     <div class="addGrid">
@@ -439,14 +300,8 @@ textarea {
       <input id="newAuthor" type="text" placeholder="Author">
       <input id="newSeries" type="text" placeholder="Series / book info">
       <input id="newYear" type="text" placeholder="Year">
-      <select id="newStatus">
-        <option value="read">Read</option>
-        <option value="need-to-finish">Need to finish</option>
-        <option value="dnf">DNF</option>
-        <option value="want-to-read">Want to read</option>
-      </select>
       <select id="newRating">
-        <option value="">No rating</option>
+        <option value="">Unrated</option>
         <option value="1">1★</option>
         <option value="2">2★</option>
         <option value="3">3★</option>
@@ -455,39 +310,106 @@ textarea {
       </select>
       <button id="addBtn" class="primary">Add</button>
     </div>
-    <div class="footerNote">Saved browser data still wins first. Reset pulls the preload file back in.</div>
+    <div class="footerNote">Repo JSON is the base source. After it loads, your edits save in local storage on this device.</div>
   </section>
 
   <section id="list" class="list"></section>
 </div>
 
 <script>
-const STORAGE_KEY = "dylan-book-tracker-pink-v1";
+const STORAGE_KEY = "dylan-book-tracker-repo-v3";
 const JSON_CANDIDATES = [
-  "./book-tracker-export.json",
+  "./dylan_books_partially_filled.json",
   "./books.json",
-  "./data.json",
-  "./book-data.json",
-  "./books-data.json",
-  "./library.json",
+  "./book-tracker.json",
   "./data/books.json",
-  "./assets/books.json",
-  "/JazzysBooks/book-tracker-export.json",
-  "/JazzysBooks/books.json",
-  "/JazzysBooks/data.json",
-  "/JazzysBooks/book-data.json",
-  "/JazzysBooks/books-data.json",
-  "/JazzysBooks/library.json",
-  "/JazzysBooks/data/books.json",
-  "/JazzysBooks/assets/books.json"
+  "./data/book-tracker.json",
+  "./jazzy-books.json"
 ];
+const defaultBooks = [];
 
-let preloadBooks = [];
-let activePreloadPath = "";
 let books = [];
+let lastRepoPath = null;
+
+function banner(msg, isError = false) {
+  const el = document.getElementById("loadBanner");
+  el.textContent = msg;
+  el.classList.toggle("error", !!isError);
+}
+
+function normalizeBook(book, fallbackId) {
+  return {
+    id: Number(book.id) || fallbackId,
+    title: book.title || "",
+    author: book.author || "",
+    series: book.series || "",
+    published_year: book.published_year || book.year || "",
+    status: book.status || "read",
+    rating: book.rating === 0 ? 0 : (book.rating || ""),
+    favorite: !!book.favorite,
+    comment: book.comment || "",
+    source_text: book.source_text || book.title || ""
+  };
+}
+
+function normalizeIncoming(data) {
+  const incoming = Array.isArray(data) ? data : data && Array.isArray(data.books) ? data.books : null;
+  if (!incoming) return null;
+  return incoming.map((book, index) => normalizeBook(book, index + 1));
+}
+
+async function fetchRepoBooks() {
+  for (const path of JSON_CANDIDATES) {
+    try {
+      const res = await fetch(path, { cache: "no-store" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const normalized = normalizeIncoming(data);
+      if (normalized && normalized.length) {
+        lastRepoPath = path;
+        return normalized;
+      }
+    } catch (err) {}
+  }
+  return null;
+}
+
+async function loadBooks() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      const normalized = normalizeIncoming(parsed);
+      if (normalized && normalized.length) {
+        banner("Loaded saved local version.");
+        return normalized;
+      }
+    } catch (err) {}
+  }
+
+  const repoBooks = await fetchRepoBooks();
+  if (repoBooks && repoBooks.length) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(repoBooks));
+    banner(`Loaded ${repoBooks.length} books from ${lastRepoPath}.`);
+    return repoBooks;
+  }
+
+  banner("Could not find the repo JSON. Your repo file appears to be named dylan_books_partially_filled.json and should be in the same folder as index.html.", true);
+  return structuredClone(defaultBooks);
+}
+
+function saveBooks() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+}
 
 function escapeHtml(str) {
-  return String(str || "").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  return String(str || "").replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
 }
 
 function updateClock() {
@@ -511,69 +433,6 @@ function updateClock() {
   document.getElementById("todayTime").textContent = timeFmt.format(now);
 }
 
-function normalizeBook(book) {
-  return {
-    id: Number(book.id) || Date.now() + Math.floor(Math.random() * 1000),
-    title: book.title || "Untitled",
-    author: book.author || "",
-    series: book.series || "",
-    published_year: book.published_year || book.year || "",
-    status: book.status || "read",
-    rating: book.rating === 0 ? 0 : (book.rating || ""),
-    favorite: Boolean(book.favorite),
-    comment: book.comment || "",
-    source_text: book.source_text || book.title || ""
-  };
-}
-
-function noteSource(message) {
-  const el = document.getElementById("sourceNote");
-  el.textContent = message;
-  el.classList.remove("hidden");
-}
-
-async function tryFetchJson(path) {
-  const res = await fetch(path, { cache: "no-store" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  const incoming = Array.isArray(data) ? data : data.books;
-  if (!Array.isArray(incoming)) throw new Error("JSON shape not supported");
-  return incoming.map(normalizeBook);
-}
-
-async function loadPreloadBooks() {
-  for (const path of JSON_CANDIDATES) {
-    try {
-      const found = await tryFetchJson(path);
-      activePreloadPath = path;
-      preloadBooks = found;
-      noteSource(`Preload source: ${path}`);
-      return found;
-    } catch (err) {
-      continue;
-    }
-  }
-  preloadBooks = [];
-  noteSource("No repo JSON preload file was found in the common paths, so this page is using saved browser data only until a matching JSON path is found.");
-  return [];
-}
-
-function loadSavedBooks() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return null;
-  try {
-    const parsed = JSON.parse(saved);
-    if (!Array.isArray(parsed)) return null;
-    return parsed.map(normalizeBook);
-  } catch {
-    return null;
-  }
-}
-
-function saveBooks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
-}
-
 function getFilteredBooks() {
   const q = (document.getElementById("search").value || "").toLowerCase().trim();
   const statusFilter = document.getElementById("statusFilter").value;
@@ -583,8 +442,9 @@ function getFilteredBooks() {
   return books.filter(book => {
     const blob = [book.title, book.author, book.series, book.comment, book.source_text].join(" ").toLowerCase();
     if (q && !blob.includes(q)) return false;
-    if (statusFilter !== "all" && book.status !== statusFilter) return false;
+    if (statusFilter !== "all" && (book.status || "read") !== statusFilter) return false;
     if (favoriteFilter === "favorites" && !book.favorite) return false;
+
     if (ratingFilter !== "all") {
       const r = Number(book.rating || 0);
       if (ratingFilter === "0") {
@@ -614,12 +474,11 @@ function starMarkup(book) {
 
 function render() {
   const list = document.getElementById("list");
-  books = books.map(normalizeBook);
   const filtered = getFilteredBooks();
   computeStats(filtered);
 
   if (!filtered.length) {
-    list.innerHTML = '<div class="empty">No books match this filter yet.</div>';
+    list.innerHTML = '<div class="empty">No books match this filter.</div>';
     return;
   }
 
@@ -627,6 +486,7 @@ function render() {
     const meta = [book.author, book.series, book.published_year].filter(Boolean).join(" • ");
     const rateText = book.rating ? `${book.rating}★` : "Unrated";
     const statusText = (book.status || "read").replaceAll("-", " ");
+
     return `
       <div class="bookRow">
         <div class="bookHead" data-toggle="${book.id}">
@@ -643,6 +503,7 @@ function render() {
             ${book.favorite ? '<span class="pill fav">Favorite</span>' : ''}
           </div>
         </div>
+
         <div class="details" id="details-${book.id}">
           <div class="detailGrid">
             <div>
@@ -667,6 +528,7 @@ function render() {
               </select>
             </div>
           </div>
+
           <div class="rowActions">
             <div>
               <div class="smallLab">Rating</div>
@@ -677,6 +539,7 @@ function render() {
               <button class="favBtn ${book.favorite ? 'active' : ''} js-fav" data-id="${book.id}">${book.favorite ? '♥ Favorited' : '♡ Mark favorite'}</button>
             </div>
           </div>
+
           <div class="full">
             <div class="smallLab">Comment</div>
             <textarea class="js-comment" data-id="${book.id}" placeholder="Thoughts, notes, reactions...">${escapeHtml(book.comment)}</textarea>
@@ -688,7 +551,7 @@ function render() {
 }
 
 function updateBook(id, patch) {
-  const idx = books.findIndex(b => Number(b.id) === Number(id));
+  const idx = books.findIndex(b => b.id === id);
   if (idx === -1) return;
   books[idx] = { ...books[idx], ...patch };
   saveBooks();
@@ -710,7 +573,7 @@ document.addEventListener("click", (e) => {
     e.stopPropagation();
     const id = Number(star.dataset.book);
     const value = Number(star.dataset.star);
-    const book = books.find(b => Number(b.id) === id);
+    const book = books.find(b => b.id === id);
     updateBook(id, { rating: Number(book.rating || 0) === value ? "" : value });
     render();
     return;
@@ -720,10 +583,9 @@ document.addEventListener("click", (e) => {
   if (fav) {
     e.stopPropagation();
     const id = Number(fav.dataset.id);
-    const book = books.find(b => Number(b.id) === id);
+    const book = books.find(b => b.id === id);
     updateBook(id, { favorite: !book.favorite });
     render();
-    return;
   }
 });
 
@@ -745,7 +607,7 @@ document.addEventListener("change", (e) => {
     render();
     return;
   }
-  if (["statusFilter", "ratingFilter", "favoriteFilter"].includes(e.target.id)) render();
+  if (["statusFilter","ratingFilter","favoriteFilter"].includes(e.target.id)) render();
 });
 
 document.getElementById("addBtn").addEventListener("click", () => {
@@ -754,22 +616,26 @@ document.getElementById("addBtn").addEventListener("click", () => {
     alert("Add a title first.");
     return;
   }
+
   const nextId = books.length ? Math.max(...books.map(b => Number(b.id) || 0)) + 1 : 1;
+
   books.push({
     id: nextId,
     title,
     author: document.getElementById("newAuthor").value.trim(),
     series: document.getElementById("newSeries").value.trim(),
     published_year: document.getElementById("newYear").value.trim(),
-    status: document.getElementById("newStatus").value,
+    status: "read",
     rating: document.getElementById("newRating").value ? Number(document.getElementById("newRating").value) : "",
     favorite: false,
     comment: "",
     source_text: title
   });
+
   saveBooks();
-  ["newTitle", "newAuthor", "newSeries", "newYear", "newRating"].forEach(id => document.getElementById(id).value = "");
-  document.getElementById("newStatus").value = "read";
+  ["newTitle","newAuthor","newSeries","newYear","newRating"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
   render();
 });
 
@@ -788,25 +654,48 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
   if (!file) return;
   try {
     const text = await file.text();
-    const data = JSON.parse(text);
-    const incoming = Array.isArray(data) ? data : data.books;
-    if (!Array.isArray(incoming)) throw new Error();
-    books = incoming.map(normalizeBook);
+    const parsed = JSON.parse(text);
+    const normalized = normalizeIncoming(parsed);
+    if (!normalized) throw new Error();
+    books = normalized;
     saveBooks();
     render();
+    banner(`Imported ${books.length} books from file.`);
     alert("Import complete.");
   } catch {
     alert("That file could not be imported.");
   }
 });
 
-document.getElementById("resetBtn").addEventListener("click", async () => {
-  const ok = confirm("Reset everything back to the repo preload JSON?");
-  if (!ok) return;
-  await loadPreloadBooks();
-  books = structuredClone(preloadBooks);
-  saveBooks();
-  render();
+document.getElementById("reloadRepoBtn").addEventListener("click", async () => {
+  const repoBooks = await fetchRepoBooks();
+  if (repoBooks && repoBooks.length) {
+    books = repoBooks;
+    saveBooks();
+    render();
+    banner(`Reloaded ${books.length} books from ${lastRepoPath}.`);
+    alert("Repo JSON reloaded.");
+  } else {
+    banner("Still could not find repo JSON. Make sure dylan_books_partially_filled.json is in the same folder as index.html.", true);
+    alert("Repo JSON was not found.");
+  }
+});
+
+document.getElementById("clearLocalBtn").addEventListener("click", async () => {
+  localStorage.removeItem(STORAGE_KEY);
+  const repoBooks = await fetchRepoBooks();
+  if (repoBooks && repoBooks.length) {
+    books = repoBooks;
+    saveBooks();
+    render();
+    banner(`Cleared local cache and reloaded ${books.length} books from ${lastRepoPath}.`);
+    alert("Local cache cleared.");
+  } else {
+    books = structuredClone(defaultBooks);
+    render();
+    banner("Local cache cleared, but repo JSON was not found.", true);
+    alert("Local cache cleared, but repo JSON still was not found.");
+  }
 });
 
 const menuBtn = document.getElementById("menuBtn");
@@ -822,12 +711,9 @@ document.addEventListener("click", (e) => {
 async function init() {
   updateClock();
   setInterval(updateClock, 1000);
-  await loadPreloadBooks();
-  const saved = loadSavedBooks();
-  books = saved && saved.length ? saved : structuredClone(preloadBooks);
+  books = await loadBooks();
   render();
 }
-
 init();
 </script>
 </body>
