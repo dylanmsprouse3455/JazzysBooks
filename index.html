@@ -205,6 +205,28 @@ textarea{min-height:100px;resize:vertical}
   border-color:#f3d4e1;
   color:#a46383;
 }
+[hidden]{display:none !important}
+.authGate{
+  min-height:calc(100vh - 36px);display:grid;place-items:center;padding:24px;
+}
+.authCard{
+  width:min(440px,100%);background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius-xl);box-shadow:var(--shadow);padding:26px;
+}
+.authCard h1{margin:0 0 8px;font-size:34px;letter-spacing:-.04em}
+.authCard .sub{margin-bottom:18px}
+.authField{display:grid;gap:6px;margin-top:12px}
+.authField label{font-size:12px;color:var(--muted)}
+.authField input{
+  width:100%;border:1px solid var(--line);border-radius:16px;background:#fff;
+  padding:13px 15px;color:var(--text);outline:none;font:inherit;
+}
+.authField input:focus{border-color:#9cd4ff;box-shadow:0 0 0 4px rgba(124,198,255,.16)}
+.authActions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.authMsg{min-height:20px;margin-top:12px;color:var(--muted);font-size:13px;line-height:1.4}
+.authMsg.error{color:#a46383}
+.accountLine{padding:10px 12px;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+
 @media (max-width:980px){
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .controls{grid-template-columns:1fr 1fr}
@@ -224,12 +246,32 @@ textarea{min-height:100px;resize:vertical}
 </style>
 </head>
 <body>
-<div class="wrap">
+<section id="authGate" class="authGate">
+  <div class="authCard">
+    <h1>Jazzy’s Books</h1>
+    <div class="sub">Sign in to keep the library saved to your account and synced across devices.</div>
+    <div class="authField">
+      <label for="authEmail">Email</label>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    </div>
+    <div class="authField">
+      <label for="authPassword">Password</label>
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password">
+    </div>
+    <div class="authActions">
+      <button id="signInBtn" class="primary">Sign in</button>
+      <button id="signUpBtn" class="softBtn">Create account</button>
+    </div>
+    <div id="authMessage" class="authMsg"></div>
+  </div>
+</section>
+
+<div class="wrap" id="appWrap" hidden>
   <section class="top">
     <div class="topbar">
       <div class="headline">
         <h1 class="title">Jazzy’s Books</h1>
-        <div class="sub">DS Digital Designs style. Pulls from your GitHub JSON first, then saves your edits locally.</div>
+        <div class="sub">Your library is saved privately to your account and synced across devices.</div>
         <div class="datetime">
           <span id="todayDate">Loading date…</span>
           <span>•</span>
@@ -239,9 +281,11 @@ textarea{min-height:100px;resize:vertical}
       <div class="menuWrap">
         <button id="menuBtn" class="menuBtn" aria-label="Menu">⋯</button>
         <div id="menu" class="menu">
-          <button id="reloadRepoBtn">Reload from repo JSON</button>
-          <button id="clearLocalBtn">Clear local cache</button>
+          <div id="accountEmail" class="accountLine"></div>
+          <button id="clearLocalBtn">Reload from account</button>
+          <button id="reloadRepoBtn">Reset from repo JSON</button>
           <button id="exportBtn">Export JSON</button>
+          <button id="signOutBtn">Sign out</button>
           <label for="importFile">Import JSON</label>
           <input id="importFile" type="file" accept="application/json" style="display:none">
         </div>
@@ -310,13 +354,18 @@ textarea{min-height:100px;resize:vertical}
       </select>
       <button id="addBtn" class="primary">Add</button>
     </div>
-    <div class="footerNote">Repo JSON is the base source. After it loads, your edits save in local storage on this device.</div>
+    <div class="footerNote">Changes save privately to your account and sync across devices.</div>
   </section>
 
   <section id="list" class="list"></section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL = "https://uouzmmexjundpfitogky.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable__XjfvOCgcMDsBks3V4F0Cg_o0rEZn_t";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+let currentUser = null;
 const STORAGE_KEY = "dylan-book-tracker-repo-v3";
 const JSON_CANDIDATES = [
   "./dylan_books_partially_filled.json",
@@ -375,31 +424,43 @@ async function fetchRepoBooks() {
 }
 
 async function loadBooks() {
+  if (!currentUser) return [];
+  const { data, error } = await db.from("jazzy_book_libraries").select("books").eq("user_id", currentUser.id).maybeSingle();
+  if (error) {
+    banner("Could not load your account library: " + error.message, true);
+    return [];
+  }
+  if (data && Array.isArray(data.books)) {
+    const normalized = normalizeIncoming(data.books) || [];
+    banner(`Loaded ${normalized.length} books from your account.`);
+    return normalized;
+  }
+
+  let seed = null;
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      const normalized = normalizeIncoming(parsed);
-      if (normalized && normalized.length) {
-        banner("Loaded saved local version.");
-        return normalized;
-      }
-    } catch (err) {}
+    try { seed = normalizeIncoming(JSON.parse(saved)); } catch (err) {}
   }
-
-  const repoBooks = await fetchRepoBooks();
-  if (repoBooks && repoBooks.length) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(repoBooks));
-    banner(`Loaded ${repoBooks.length} books from ${lastRepoPath}.`);
-    return repoBooks;
-  }
-
-  banner("Could not find the repo JSON. Your repo file appears to be named dylan_books_partially_filled.json and should be in the same folder as index.html.", true);
-  return structuredClone(defaultBooks);
+  if (!seed || !seed.length) seed = await fetchRepoBooks();
+  seed = seed || [];
+  const { error: createError } = await db.from("jazzy_book_libraries").insert({ user_id: currentUser.id, books: seed });
+  if (createError) banner("Signed in, but initial library save failed: " + createError.message, true);
+  else banner(`Created your account library with ${seed.length} books.`);
+  return seed;
 }
 
+let saveTimer = null;
 function saveBooks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+  if (!currentUser) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const { error } = await db.from("jazzy_book_libraries").upsert(
+      { user_id: currentUser.id, books, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
+    if (error) banner("Save failed: " + error.message, true);
+    else banner("Saved to your account.");
+  }, 250);
 }
 
 function escapeHtml(str) {
@@ -682,20 +743,8 @@ document.getElementById("reloadRepoBtn").addEventListener("click", async () => {
 });
 
 document.getElementById("clearLocalBtn").addEventListener("click", async () => {
-  localStorage.removeItem(STORAGE_KEY);
-  const repoBooks = await fetchRepoBooks();
-  if (repoBooks && repoBooks.length) {
-    books = repoBooks;
-    saveBooks();
-    render();
-    banner(`Cleared local cache and reloaded ${books.length} books from ${lastRepoPath}.`);
-    alert("Local cache cleared.");
-  } else {
-    books = structuredClone(defaultBooks);
-    render();
-    banner("Local cache cleared, but repo JSON was not found.", true);
-    alert("Local cache cleared, but repo JSON still was not found.");
-  }
+  books = await loadBooks();
+  render();
 });
 
 const menuBtn = document.getElementById("menuBtn");
@@ -708,11 +757,63 @@ document.addEventListener("click", (e) => {
   if (!menu.contains(e.target) && e.target !== menuBtn) menu.classList.remove("open");
 });
 
+function authMessage(msg, isError = false) {
+  const el = document.getElementById("authMessage");
+  el.textContent = msg;
+  el.classList.toggle("error", !!isError);
+}
+
+async function enterApp(user) {
+  currentUser = user;
+  document.getElementById("authGate").hidden = true;
+  document.getElementById("appWrap").hidden = false;
+  document.getElementById("accountEmail").textContent = user.email || "Signed in";
+  books = await loadBooks();
+  render();
+}
+
+function leaveApp() {
+  currentUser = null;
+  books = [];
+  document.getElementById("appWrap").hidden = true;
+  document.getElementById("authGate").hidden = false;
+}
+
+document.getElementById("signInBtn").addEventListener("click", async () => {
+  authMessage("Signing in…");
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
+  if (error) return authMessage(error.message, true);
+  authMessage("");
+  await enterApp(data.user);
+});
+
+document.getElementById("signUpBtn").addEventListener("click", async () => {
+  authMessage("Creating account…");
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  const { data, error } = await db.auth.signUp({ email, password });
+  if (error) return authMessage(error.message, true);
+  if (data.session && data.user) {
+    authMessage("");
+    await enterApp(data.user);
+  } else {
+    authMessage("Account created. Check your email to confirm it, then sign in.");
+  }
+});
+
+document.getElementById("signOutBtn").addEventListener("click", async () => {
+  await db.auth.signOut();
+  leaveApp();
+});
+
 async function init() {
   updateClock();
   setInterval(updateClock, 1000);
-  books = await loadBooks();
-  render();
+  const { data: { session } } = await db.auth.getSession();
+  if (session && session.user) await enterApp(session.user);
+  else leaveApp();
 }
 init();
 </script>
