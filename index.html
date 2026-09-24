@@ -381,6 +381,7 @@ let books = [];
 let lastRepoPath = null;
 let libraryRevision = null;
 let conflictActive = false;
+let saveChain = Promise.resolve(true);
 
 function banner(msg, isError = false) {
   const el = document.getElementById("loadBanner");
@@ -460,11 +461,12 @@ async function loadBooks() {
   return seed;
 }
 
-async function saveBooksNow() {
+async function persistBooksNow() {
   if (!currentUser || libraryRevision === null || conflictActive) return false;
   const expectedRevision = libraryRevision;
+  const snapshot = JSON.parse(JSON.stringify(books));
   const { data, error } = await db.rpc("save_jazzy_book_library", {
-    p_books: books,
+    p_books: snapshot,
     p_expected_revision: expectedRevision
   });
   if (error) {
@@ -481,11 +483,24 @@ async function saveBooksNow() {
   return true;
 }
 
+function saveBooksNow() {
+  saveChain = saveChain
+    .then(() => persistBooksNow())
+    .catch(err => {
+      banner("Save failed: " + (err && err.message ? err.message : String(err)), true);
+      return false;
+    });
+  return saveChain;
+}
+
 let saveTimer = null;
 function saveBooks() {
   if (!currentUser || conflictActive) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveBooksNow, 250);
+  saveTimer = setTimeout(() => {
+    saveTimer = null;
+    saveBooksNow();
+  }, 250);
 }
 
 function escapeHtml(str) {
