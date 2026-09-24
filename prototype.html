@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Jazzy's Books — Visual Shell</title>
+  <link rel="stylesheet" href="./jazzy-shell.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">📚</div>
+      <div class="brand-copy">
+        <h1>Jazzy's Books <span>♥</span></h1>
+        <p>GOOD BOOKS &nbsp;•&nbsp; BRIGHTER DAYS</p>
+      </div>
+      <button class="avatar" aria-label="Account">J</button>
+    </header>
+
+    <section class="search-wrap" aria-label="Book search mockup">
+      <span class="search-icon">⌕</span>
+      <input type="search" placeholder="Search title, author, or ISBN">
+      <button class="scan-btn" aria-label="Scan ISBN">▥</button>
+    </section>
+
+    <section class="library-section open" data-section>
+      <button class="section-head" data-collapse>
+        <span class="section-title"><span class="section-icon">▣</span> Currently Reading <small>(2)</small></span>
+        <span class="chevron">⌃</span>
+      </button>
+      <div class="section-body">
+        <div class="book-grid">
+          <article class="book-card selected" data-book-card>
+            <div class="cover-art cover-night">
+              <span class="cover-kicker">THE</span>
+              <strong>The Map of<br>Brighter Things</strong>
+              <em>ELISE CARTER</em>
+            </div>
+            <h3>The Map of Brighter Things</h3>
+            <p>Elise Carter</p>
+          </article>
+
+          <article class="book-card" data-book-card>
+            <div class="cover-art cover-sun">
+              <span class="cover-kicker">JORDAN ELLIS</span>
+              <strong>A Quieter<br>Kind of Brave</strong>
+              <em>JORDAN ELLIS</em>
+            </div>
+            <h3>A Quieter Kind of Brave</h3>
+            <p>Jordan Ellis</p>
+          </article>
+        </div>
+
+        <article class="detail-card" id="mockDetails">
+          <button class="detail-close" aria-label="Collapse book details">×</button>
+          <div class="detail-intro">
+            <div class="mini-cover cover-night">
+              <strong>The Map of<br>Brighter Things</strong>
+              <em>ELISE CARTER</em>
+            </div>
+            <div>
+              <h2>The Map of Brighter Things</h2>
+              <p class="detail-author">Elise Carter</p>
+              <p class="description">A warm, atmospheric story about finding a path forward through the places and people that matter most.</p>
+              <button class="text-link">Read more⌄</button>
+            </div>
+          </div>
+
+          <div class="detail-grid">
+            <div class="facts">
+              <div><span>Author</span><b>Elise Carter</b></div>
+              <div><span>Series</span><b>The Brighter Things (Book 1)</b></div>
+              <div><span>Year</span><b>2023</b></div>
+              <div><span>Status</span><b class="pill">Currently Reading⌄</b></div>
+              <div><span>Rating</span><b class="stars">★★★★☆</b></div>
+              <div><span>Notes</span><b class="note">Such a cozy, heartfelt read.</b></div>
+            </div>
+            <div class="detail-actions">
+              <button class="primary-btn">▣ Update Progress</button>
+              <button>✎ Edit Details</button>
+              <button>♧ Remove from Library</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="library-section" data-section>
+      <button class="section-head" data-collapse>
+        <span class="section-title"><span class="section-icon">♥</span> Want to Read <small>(5)</small></span>
+        <span class="chevron">⌄</span>
+      </button>
+      <div class="section-body placeholder-row">
+        <div class="placeholder-cover"></div><div class="placeholder-cover"></div>
+      </div>
+    </section>
+
+    <section class="library-section" data-section>
+      <button class="section-head" data-collapse>
+        <span class="section-title"><span class="section-icon">✓</span> Finished <small>(12)</small></span>
+        <span class="chevron">⌄</span>
+      </button>
+      <div class="section-body placeholder-row">
+        <div class="placeholder-cover"></div><div class="placeholder-cover"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Primary navigation">
+    <button class="active"><span>⌂</span>Library</button>
+    <button><span>⌕</span>Search</button>
+    <button><span>▥</span>Stats</button>
+    <button><span>☷</span>Lists</button>
+    <button class="add-book" aria-label="Add book">＋</button>
+  </nav>
+
+  <script src="./jazzy-shell.js"></script>
+</body>
+</html>
