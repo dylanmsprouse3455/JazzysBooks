@@ -379,6 +379,8 @@ const defaultBooks = [];
 
 let books = [];
 let lastRepoPath = null;
+let libraryRevision = null;
+let conflictActive = false;
 
 function banner(msg, isError = false) {
   const el = document.getElementById("loadBanner");
@@ -425,14 +427,16 @@ async function fetchRepoBooks() {
 
 async function loadBooks() {
   if (!currentUser) return [];
-  const { data, error } = await db.from("jazzy_book_libraries").select("books").eq("user_id", currentUser.id).maybeSingle();
+  const { data, error } = await db.from("jazzy_book_libraries").select("books, revision").eq("user_id", currentUser.id).maybeSingle();
   if (error) {
     banner("Could not load your account library: " + error.message, true);
     return [];
   }
   if (data && Array.isArray(data.books)) {
+    libraryRevision = Number(data.revision || 1);
+    conflictActive = false;
     const normalized = normalizeIncoming(data.books) || [];
-    banner(`Loaded ${normalized.length} books from your account.`);
+    banner("Loaded " + normalized.length + " books from your account.");
     return normalized;
   }
 
@@ -443,24 +447,45 @@ async function loadBooks() {
   }
   if (!seed || !seed.length) seed = await fetchRepoBooks();
   seed = seed || [];
-  const { error: createError } = await db.from("jazzy_book_libraries").insert({ user_id: currentUser.id, books: seed });
+  const { data: created, error: createError } = await db.from("jazzy_book_libraries")
+    .insert({ user_id: currentUser.id, books: seed })
+    .select("revision")
+    .single();
   if (createError) banner("Signed in, but initial library save failed: " + createError.message, true);
-  else banner(`Created your account library with ${seed.length} books.`);
+  else {
+    libraryRevision = Number(created.revision || 1);
+    conflictActive = false;
+    banner("Created your account library with " + seed.length + " books.");
+  }
   return seed;
+}
+
+async function saveBooksNow() {
+  if (!currentUser || libraryRevision === null || conflictActive) return false;
+  const expectedRevision = libraryRevision;
+  const { data, error } = await db.rpc("save_jazzy_book_library", {
+    p_books: books,
+    p_expected_revision: expectedRevision
+  });
+  if (error) {
+    banner("Save failed: " + error.message, true);
+    return false;
+  }
+  if (!data || !data.length) {
+    conflictActive = true;
+    banner("Newer changes were found on another device. Your changes were NOT overwritten. Reload from account to continue.", true);
+    return false;
+  }
+  libraryRevision = Number(data[0].new_revision);
+  banner("Saved to your account.");
+  return true;
 }
 
 let saveTimer = null;
 function saveBooks() {
-  if (!currentUser) return;
+  if (!currentUser || conflictActive) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    const { error } = await db.from("jazzy_book_libraries").upsert(
-      { user_id: currentUser.id, books, updated_at: new Date().toISOString() },
-      { onConflict: "user_id" }
-    );
-    if (error) banner("Save failed: " + error.message, true);
-    else banner("Saved to your account.");
-  }, 250);
+  saveTimer = setTimeout(saveBooksNow, 250);
 }
 
 function escapeHtml(str) {
@@ -805,15 +830,9 @@ document.getElementById("signUpBtn").addEventListener("click", async () => {
 
 document.getElementById("signOutBtn").addEventListener("click", async () => {
   clearTimeout(saveTimer);
-  if (currentUser) {
-    const { error } = await db.from("jazzy_book_libraries").upsert(
-      { user_id: currentUser.id, books, updated_at: new Date().toISOString() },
-      { onConflict: "user_id" }
-    );
-    if (error) {
-      banner("Final save failed: " + error.message, true);
-      return;
-    }
+  if (currentUser && !conflictActive) {
+    const saved = await saveBooksNow();
+    if (!saved) return;
   }
   await db.auth.signOut();
   leaveApp();
