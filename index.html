@@ -205,43 +205,27 @@ textarea{min-height:100px;resize:vertical}
   border-color:#f3d4e1;
   color:#a46383;
 }
+[hidden]{display:none !important}
 .authGate{
-  min-height:calc(100vh - 36px);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
+  min-height:calc(100vh - 36px);display:grid;place-items:center;padding:24px;
 }
-.authGate.hidden{display:none}
 .authCard{
-  width:min(430px,100%);
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:var(--radius-xl);
-  box-shadow:var(--shadow);
-  padding:28px;
-  backdrop-filter:blur(12px);
+  width:min(440px,100%);background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--radius-xl);box-shadow:var(--shadow);padding:26px;
 }
 .authCard h1{margin:0 0 8px;font-size:34px;letter-spacing:-.04em}
 .authCard .sub{margin-bottom:18px}
-.authFields{display:grid;gap:10px}
-.authFields input{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:#fff;
-  padding:13px 15px;
-  color:var(--text);
-  outline:none;
+.authField{display:grid;gap:6px;margin-top:12px}
+.authField label{font-size:12px;color:var(--muted)}
+.authField input{
+  width:100%;border:1px solid var(--line);border-radius:16px;background:#fff;
+  padding:13px 15px;color:var(--text);outline:none;font:inherit;
 }
-.authFields input:focus{
-  border-color:#9cd4ff;
-  box-shadow:0 0 0 4px rgba(124,198,255,.16);
-}
-.authActions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
-.authMessage{min-height:20px;margin-top:12px;color:var(--muted);font-size:13px}
-.authMessage.error{color:#a46383}
-.userLine{padding:10px 12px;color:var(--muted);font-size:12px;word-break:break-all}
+.authField input:focus{border-color:#9cd4ff;box-shadow:0 0 0 4px rgba(124,198,255,.16)}
+.authActions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.authMsg{min-height:20px;margin-top:12px;color:var(--muted);font-size:13px;line-height:1.4}
+.authMsg.error{color:#a46383}
+.accountLine{padding:10px 12px;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
 
 @media (max-width:980px){
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -262,27 +246,32 @@ textarea{min-height:100px;resize:vertical}
 </style>
 </head>
 <body>
-<div id="authGate" class="authGate">
+<section id="authGate" class="authGate">
   <div class="authCard">
     <h1>Jazzy’s Books</h1>
-    <div class="sub">Log in to keep your library saved and synced across devices.</div>
-    <div class="authFields">
-      <input id="authEmail" type="email" autocomplete="email" placeholder="Email">
-      <input id="authPassword" type="password" autocomplete="current-password" minlength="8" placeholder="Password">
+    <div class="sub">Sign in to keep the library saved to your account and synced across devices.</div>
+    <div class="authField">
+      <label for="authEmail">Email</label>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    </div>
+    <div class="authField">
+      <label for="authPassword">Password</label>
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password">
     </div>
     <div class="authActions">
-      <button id="signInBtn" class="primary">Log in</button>
+      <button id="signInBtn" class="primary">Sign in</button>
       <button id="signUpBtn" class="softBtn">Create account</button>
     </div>
-    <div id="authMessage" class="authMessage"></div>
+    <div id="authMessage" class="authMsg"></div>
   </div>
-</div>
-<div class="wrap" id="appWrap" style="display:none">
+</section>
+
+<div class="wrap" id="appWrap" hidden>
   <section class="top">
     <div class="topbar">
       <div class="headline">
         <h1 class="title">Jazzy’s Books</h1>
-        <div class="sub">Your library is saved to your account and syncs across devices.</div>
+        <div class="sub">Your library is saved privately to your account and synced across devices.</div>
         <div class="datetime">
           <span id="todayDate">Loading date…</span>
           <span>•</span>
@@ -292,13 +281,13 @@ textarea{min-height:100px;resize:vertical}
       <div class="menuWrap">
         <button id="menuBtn" class="menuBtn" aria-label="Menu">⋯</button>
         <div id="menu" class="menu">
-          <button id="reloadRepoBtn">Reload from repo JSON</button>
-          <button id="clearLocalBtn">Clear local cache</button>
+          <div id="accountEmail" class="accountLine"></div>
+          <button id="clearLocalBtn">Reload from account</button>
+          <button id="reloadRepoBtn">Reset from repo JSON</button>
           <button id="exportBtn">Export JSON</button>
+          <button id="signOutBtn">Sign out</button>
           <label for="importFile">Import JSON</label>
           <input id="importFile" type="file" accept="application/json" style="display:none">
-          <div id="accountLine" class="userLine"></div>
-          <button id="signOutBtn">Sign out</button>
         </div>
       </div>
     </div>
@@ -365,14 +354,18 @@ textarea{min-height:100px;resize:vertical}
       </select>
       <button id="addBtn" class="primary">Add</button>
     </div>
-    <div class="footerNote">Signed-in changes are stored in your account. The repo JSON is only used to seed an empty account.</div>
+    <div class="footerNote">Changes save privately to your account and sync across devices.</div>
   </section>
 
   <section id="list" class="list"></section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
 <script>
+const SUPABASE_URL = "https://uouzmmexjundpfitogky.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable__XjfvOCgcMDsBks3V4F0Cg_o0rEZn_t";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+let currentUser = null;
 const STORAGE_KEY = "dylan-book-tracker-repo-v3";
 const JSON_CANDIDATES = [
   "./dylan_books_partially_filled.json",
@@ -384,20 +377,8 @@ const JSON_CANDIDATES = [
 ];
 const defaultBooks = [];
 
-const SUPABASE_URL = "https://hhigjlsdhqdvzafiwbcy.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_GITyU6W9iGX909WZX-nPqw_FBpob_wN";
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
-});
-
 let books = [];
 let lastRepoPath = null;
-let currentUser = null;
-const cloudSaveTimers = new Map();
 
 function banner(msg, isError = false) {
   const el = document.getElementById("loadBanner");
@@ -442,118 +423,44 @@ async function fetchRepoBooks() {
   return null;
 }
 
-function rowToBook(row) {
-  return {
-    id: Number(row.book_id),
-    title: row.title || "",
-    author: row.author || "",
-    series: row.series || "",
-    published_year: row.published_year || "",
-    status: row.status || "read",
-    rating: row.rating == null ? "" : Number(row.rating),
-    favorite: !!row.favorite,
-    comment: row.comment || "",
-    source_text: row.source_text || row.title || ""
-  };
-}
-
-function bookToRow(book) {
-  return {
-    user_id: currentUser.id,
-    book_id: Number(book.id),
-    title: book.title || "",
-    author: book.author || "",
-    series: book.series || "",
-    published_year: book.published_year || "",
-    status: book.status || "read",
-    rating: book.rating === "" || book.rating == null ? null : Number(book.rating),
-    favorite: !!book.favorite,
-    comment: book.comment || "",
-    source_text: book.source_text || book.title || "",
-    updated_at: new Date().toISOString()
-  };
-}
-
-async function getMigrationSource() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      const normalized = normalizeIncoming(parsed);
-      if (normalized && normalized.length) return normalized;
-    } catch (err) {}
-  }
-
-  const repoBooks = await fetchRepoBooks();
-  if (repoBooks && repoBooks.length) return repoBooks;
-  return structuredClone(defaultBooks);
-}
-
-async function syncBooksToCloud(list) {
-  if (!currentUser || !list.length) return;
-  const rows = list.map(bookToRow);
-  for (let i = 0; i < rows.length; i += 200) {
-    const { error } = await supabaseClient
-      .from("jazzy_books")
-      .upsert(rows.slice(i, i + 200), { onConflict: "user_id,book_id" });
-    if (error) throw error;
-  }
-}
-
-async function syncBookToCloud(book) {
-  if (!currentUser || !book) return;
-  const { error } = await supabaseClient
-    .from("jazzy_books")
-    .upsert(bookToRow(book), { onConflict: "user_id,book_id" });
-  if (error) throw error;
-}
-
-function queueBookSync(book) {
-  if (!currentUser || !book) return;
-  const key = Number(book.id);
-  clearTimeout(cloudSaveTimers.get(key));
-  cloudSaveTimers.set(key, setTimeout(async () => {
-    try {
-      await syncBookToCloud(book);
-      cloudSaveTimers.delete(key);
-    } catch (err) {
-      banner("Could not save the latest change to your account. Your local copy is still intact.", true);
-    }
-  }, 450));
-}
-
 async function loadBooks() {
   if (!currentUser) return [];
-
-  const { data, error } = await supabaseClient
-    .from("jazzy_books")
-    .select("book_id,title,author,series,published_year,status,rating,favorite,comment,source_text")
-    .eq("user_id", currentUser.id)
-    .order("book_id", { ascending: true });
-
-  if (error) throw error;
-
-  if (data && data.length) {
-    const cloudBooks = data.map(rowToBook);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudBooks));
-    banner(`Loaded ${cloudBooks.length} books from your account.`);
-    return cloudBooks;
+  const { data, error } = await db.from("jazzy_book_libraries").select("books").eq("user_id", currentUser.id).maybeSingle();
+  if (error) {
+    banner("Could not load your account library: " + error.message, true);
+    return [];
+  }
+  if (data && Array.isArray(data.books)) {
+    const normalized = normalizeIncoming(data.books) || [];
+    banner(`Loaded ${normalized.length} books from your account.`);
+    return normalized;
   }
 
-  const sourceBooks = await getMigrationSource();
-  if (sourceBooks.length) {
-    await syncBooksToCloud(sourceBooks);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sourceBooks));
-    banner(`Saved ${sourceBooks.length} existing books into your account.`);
-    return sourceBooks;
+  let seed = null;
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try { seed = normalizeIncoming(JSON.parse(saved)); } catch (err) {}
   }
-
-  banner("Your account is ready. Add your first book.");
-  return [];
+  if (!seed || !seed.length) seed = await fetchRepoBooks();
+  seed = seed || [];
+  const { error: createError } = await db.from("jazzy_book_libraries").insert({ user_id: currentUser.id, books: seed });
+  if (createError) banner("Signed in, but initial library save failed: " + createError.message, true);
+  else banner(`Created your account library with ${seed.length} books.`);
+  return seed;
 }
 
+let saveTimer = null;
 function saveBooks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+  if (!currentUser) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const { error } = await db.from("jazzy_book_libraries").upsert(
+      { user_id: currentUser.id, books, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
+    if (error) banner("Save failed: " + error.message, true);
+    else banner("Saved to your account.");
+  }, 250);
 }
 
 function escapeHtml(str) {
@@ -709,7 +616,6 @@ function updateBook(id, patch) {
   if (idx === -1) return;
   books[idx] = { ...books[idx], ...patch };
   saveBooks();
-  queueBookSync(books[idx]);
 }
 
 document.addEventListener("click", (e) => {
@@ -765,7 +671,7 @@ document.addEventListener("change", (e) => {
   if (["statusFilter","ratingFilter","favoriteFilter"].includes(e.target.id)) render();
 });
 
-document.getElementById("addBtn").addEventListener("click", async () => {
+document.getElementById("addBtn").addEventListener("click", () => {
   const title = document.getElementById("newTitle").value.trim();
   if (!title) {
     alert("Add a title first.");
@@ -774,7 +680,7 @@ document.getElementById("addBtn").addEventListener("click", async () => {
 
   const nextId = books.length ? Math.max(...books.map(b => Number(b.id) || 0)) + 1 : 1;
 
-  const newBook = {
+  books.push({
     id: nextId,
     title,
     author: document.getElementById("newAuthor").value.trim(),
@@ -785,18 +691,9 @@ document.getElementById("addBtn").addEventListener("click", async () => {
     favorite: false,
     comment: "",
     source_text: title
-  };
+  });
 
-  books.push(newBook);
   saveBooks();
-
-  try {
-    await syncBookToCloud(newBook);
-    banner("Book added and saved to your account.");
-  } catch (err) {
-    banner("Book added locally, but cloud save failed. Try again after reconnecting.", true);
-  }
-
   ["newTitle","newAuthor","newSeries","newYear","newRating"].forEach(id => {
     document.getElementById(id).value = "";
   });
@@ -823,12 +720,11 @@ document.getElementById("importFile").addEventListener("change", async (e) => {
     if (!normalized) throw new Error();
     books = normalized;
     saveBooks();
-    await syncBooksToCloud(books);
     render();
-    banner(`Imported and synced ${books.length} books.`);
+    banner(`Imported ${books.length} books from file.`);
     alert("Import complete.");
   } catch {
-    alert("That file could not be imported or synced.");
+    alert("That file could not be imported.");
   }
 });
 
@@ -837,30 +733,18 @@ document.getElementById("reloadRepoBtn").addEventListener("click", async () => {
   if (repoBooks && repoBooks.length) {
     books = repoBooks;
     saveBooks();
-    try {
-      await syncBooksToCloud(books);
-      render();
-      banner(`Reloaded and synced ${books.length} books from ${lastRepoPath}.`);
-      alert("Repo JSON reloaded into your account.");
-    } catch (err) {
-      banner("Repo list loaded locally, but cloud sync failed.", true);
-    }
+    render();
+    banner(`Reloaded ${books.length} books from ${lastRepoPath}.`);
+    alert("Repo JSON reloaded.");
   } else {
-    banner("Could not find the repo JSON.", true);
+    banner("Still could not find repo JSON. Make sure dylan_books_partially_filled.json is in the same folder as index.html.", true);
     alert("Repo JSON was not found.");
   }
 });
 
 document.getElementById("clearLocalBtn").addEventListener("click", async () => {
-  localStorage.removeItem(STORAGE_KEY);
-  try {
-    books = await loadBooks();
-    render();
-    banner(`Cleared this browser cache. Reloaded ${books.length} books from your account.`);
-    alert("Local cache cleared. Your cloud library was not deleted.");
-  } catch (err) {
-    banner("Local cache cleared, but your cloud library could not be reloaded.", true);
-  }
+  books = await loadBooks();
+  render();
 });
 
 const menuBtn = document.getElementById("menuBtn");
@@ -873,112 +757,63 @@ document.addEventListener("click", (e) => {
   if (!menu.contains(e.target) && e.target !== menuBtn) menu.classList.remove("open");
 });
 
-function setAuthMessage(message, isError = false) {
+function authMessage(msg, isError = false) {
   const el = document.getElementById("authMessage");
-  el.textContent = message || "";
+  el.textContent = msg;
   el.classList.toggle("error", !!isError);
 }
 
-async function openAccount(user) {
+async function enterApp(user) {
   currentUser = user;
-  document.getElementById("authGate").classList.add("hidden");
-  document.getElementById("appWrap").style.display = "";
-  document.getElementById("accountLine").textContent = user.email || "Signed in";
-  try {
-    books = await loadBooks();
-    render();
-  } catch (err) {
-    books = [];
-    render();
-    banner("Could not load your account library. Please check your connection and try again.", true);
-  }
+  document.getElementById("authGate").hidden = true;
+  document.getElementById("appWrap").hidden = false;
+  document.getElementById("accountEmail").textContent = user.email || "Signed in";
+  books = await loadBooks();
+  render();
 }
 
-function closeAccount() {
+function leaveApp() {
   currentUser = null;
   books = [];
-  document.getElementById("appWrap").style.display = "none";
-  document.getElementById("authGate").classList.remove("hidden");
-  document.getElementById("accountLine").textContent = "";
+  document.getElementById("appWrap").hidden = true;
+  document.getElementById("authGate").hidden = false;
 }
 
 document.getElementById("signInBtn").addEventListener("click", async () => {
+  authMessage("Signing in…");
   const email = document.getElementById("authEmail").value.trim();
   const password = document.getElementById("authPassword").value;
-  if (!email || !password) {
-    setAuthMessage("Enter your email and password.", true);
-    return;
-  }
-
-  setAuthMessage("Logging in…");
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) {
-    setAuthMessage(error.message || "Login failed.", true);
-    return;
-  }
-
-  setAuthMessage("");
-  await openAccount(data.user);
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
+  if (error) return authMessage(error.message, true);
+  authMessage("");
+  await enterApp(data.user);
 });
 
 document.getElementById("signUpBtn").addEventListener("click", async () => {
+  authMessage("Creating account…");
   const email = document.getElementById("authEmail").value.trim();
   const password = document.getElementById("authPassword").value;
-  if (!email || password.length < 8) {
-    setAuthMessage("Use a valid email and a password with at least 8 characters.", true);
-    return;
-  }
-
-  setAuthMessage("Creating account…");
-  const { data, error } = await supabaseClient.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: window.location.origin + window.location.pathname
-    }
-  });
-
-  if (error) {
-    setAuthMessage(error.message || "Account creation failed.", true);
-    return;
-  }
-
+  const { data, error } = await db.auth.signUp({ email, password });
+  if (error) return authMessage(error.message, true);
   if (data.session && data.user) {
-    setAuthMessage("");
-    await openAccount(data.user);
+    authMessage("");
+    await enterApp(data.user);
   } else {
-    setAuthMessage("Account created. Check your email to confirm it, then come back here and log in.");
+    authMessage("Account created. Check your email to confirm it, then sign in.");
   }
 });
 
 document.getElementById("signOutBtn").addEventListener("click", async () => {
-  await supabaseClient.auth.signOut();
-  closeAccount();
-  setAuthMessage("Signed out.");
+  await db.auth.signOut();
+  leaveApp();
 });
 
 async function init() {
   updateClock();
   setInterval(updateClock, 1000);
-
-  const { data, error } = await supabaseClient.auth.getSession();
-  if (error) {
-    closeAccount();
-    setAuthMessage("Could not check your login session.", true);
-    return;
-  }
-
-  if (data.session && data.session.user) {
-    await openAccount(data.session.user);
-  } else {
-    closeAccount();
-  }
-
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_OUT" || !session) {
-      closeAccount();
-    }
-  });
+  const { data: { session } } = await db.auth.getSession();
+  if (session && session.user) await enterApp(session.user);
+  else leaveApp();
 }
 init();
 </script>
