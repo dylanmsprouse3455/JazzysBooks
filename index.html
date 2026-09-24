@@ -804,6 +804,17 @@ document.getElementById("signUpBtn").addEventListener("click", async () => {
 });
 
 document.getElementById("signOutBtn").addEventListener("click", async () => {
+  clearTimeout(saveTimer);
+  if (currentUser) {
+    const { error } = await db.from("jazzy_book_libraries").upsert(
+      { user_id: currentUser.id, books, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
+    if (error) {
+      banner("Final save failed: " + error.message, true);
+      return;
+    }
+  }
   await db.auth.signOut();
   leaveApp();
 });
