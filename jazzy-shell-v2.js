@@ -106,8 +106,6 @@ function setAuthMode(mode, clearMessage = true) {
   $("signUpBtn").classList.toggle("active", signingUp);
   $("signInBtn").setAttribute("aria-selected", String(!signingUp));
   $("signUpBtn").setAttribute("aria-selected", String(signingUp));
-  $("confirmPasswordWrap").hidden = !signingUp;
-  $("authPasswordConfirm").required = signingUp;
   $("authPassword").required = true;
   $("authEmail").required = true;
   $("passwordFieldLabel").textContent = "Password";
@@ -121,7 +119,6 @@ function setAuthMode(mode, clearMessage = true) {
     : "Use the email and password for your Jazzy's Books account.";
   $("authSubmitBtn").textContent = authSubmitLabel();
 
-  if (!signingUp) $("authPasswordConfirm").value = "";
   if (clearMessage) authMessage("");
 }
 
@@ -535,8 +532,6 @@ function readAuthFields() {
   const needsEmail = authMode !== "password-reset";
   const email = $("authEmail").value.trim();
   const password = $("authPassword").value;
-  const confirmPassword = $("authPasswordConfirm").value;
-
   if (needsEmail && !email) {
     authMessage("Enter your email address.", "error");
     $("authEmail").focus();
@@ -682,7 +677,6 @@ $("togglePasswordBtn").addEventListener("click", () => {
   const showing = $("authPassword").type === "text";
   const nextType = showing ? "password" : "text";
   $("authPassword").type = nextType;
-  $("authPasswordConfirm").type = nextType;
   $("togglePasswordBtn").textContent = showing ? "Show" : "Hide";
   $("togglePasswordBtn").setAttribute("aria-label", showing ? "Show password" : "Hide password");
 });
