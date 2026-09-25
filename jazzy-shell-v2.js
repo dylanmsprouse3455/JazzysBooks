@@ -452,7 +452,12 @@ $("signUpBtn").addEventListener("click", async () => {
         emailRedirectTo: window.location.origin + window.location.pathname
       }
     });
-    if (error) return authMessage(error.message, true);
+    if (error) {
+      if (error.code === "signup_disabled") {
+        return authMessage("Account creation is disabled in Supabase right now.", true);
+      }
+      return authMessage(error.message, true);
+    }
     if (data.session && data.user) {
       authMessage("");
       await enterApp(data.user);
@@ -481,6 +486,15 @@ $("avatarBtn").addEventListener("click", async () => {
   if (!confirm("Sign out of Jazzy's Books?")) return;
   await db.auth.signOut();
   leaveApp();
+});
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_IN" && session?.user && currentUser?.id !== session.user.id) {
+    setTimeout(() => enterApp(session.user).catch((error) => {
+      authMessage(error?.message || "Could not open the library.", true);
+      leaveApp();
+    }), 0);
+  }
 });
 
 (async function init() {
