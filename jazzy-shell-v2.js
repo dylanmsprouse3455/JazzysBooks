@@ -192,6 +192,11 @@ async function checkForNewerRevision() {
 }
 
 async function runSearch() {
+  if (!currentUser) {
+    $("authGate").hidden = false;
+    authMessage("Sign in or create an account to search and save books.");
+    return;
+  }
   const query = $("bookSearchInput").value.trim();
   if (query.length < 2) {
     showMessage("Type at least two characters.");
@@ -240,6 +245,11 @@ async function runSearch() {
 }
 
 async function addSearchResult(index, button) {
+  if (!currentUser) {
+    $("authGate").hidden = false;
+    authMessage("Sign in or create an account to save books.");
+    return;
+  }
   const selected = searchResults[index];
   if (!selected) return;
 
@@ -451,10 +461,17 @@ $("authForm").addEventListener("submit", (event) => { event.preventDefault(); $(
 $("previewBtn").addEventListener("click", () => {
   $("authGate").hidden = true;
   $("appShell").hidden = false;
-  showMessage("Preview mode — sign in before saving books.");
+  $("bottomNav").hidden = false;
+  renderLibrary();
+  showMessage("Preview mode — sign in before searching or saving books.");
 });
 
 $("avatarBtn").addEventListener("click", async () => {
+  if (!currentUser) {
+    $("authGate").hidden = false;
+    authMessage("Sign in or create an account to open your private library.");
+    return;
+  }
   if (!confirm("Sign out of Jazzy's Books?")) return;
   await db.auth.signOut();
   leaveApp();
