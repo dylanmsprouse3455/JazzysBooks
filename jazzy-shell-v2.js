@@ -445,7 +445,13 @@ $("signUpBtn").addEventListener("click", async () => {
   if (!credentials) return;
   authMessage("Creating account…");
   try {
-    const { data, error } = await db.auth.signUp(credentials);
+    const { data, error } = await db.auth.signUp({
+      email: credentials.email,
+      password: credentials.password,
+      options: {
+        emailRedirectTo: window.location.origin + window.location.pathname
+      }
+    });
     if (error) return authMessage(error.message, true);
     if (data.session && data.user) {
       authMessage("");
