@@ -13,12 +13,15 @@
       <div class="auth-books">📚</div>
       <h1>Jazzy's Books</h1>
       <p>Sign in to open your library.</p>
-      <input id="authEmail" type="email" autocomplete="email" placeholder="Email">
-      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password">
-      <div class="auth-actions">
-        <button id="signInBtn" class="primary-btn">Sign in</button>
-        <button id="signUpBtn">Create account</button>
-      </div>
+      <form id="authForm" novalidate>
+        <input id="authEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email" required>
+        <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="Password" minlength="6" required>
+        <div class="auth-actions">
+          <button id="signInBtn" type="button" class="primary-btn">Sign in</button>
+          <button id="signUpBtn" type="button">Create account</button>
+        </div>
+      </form>
+      <button id="previewBtn" class="preview-btn" type="button">Preview the library without signing in</button>
       <p id="authMessage" class="auth-message"></p>
     </div>
   </div>

@@ -408,28 +408,50 @@ $("reloadLibraryBtn").addEventListener("click", async () => {
   showMessage("Loaded the newer library copy.");
 });
 
-$("signInBtn").addEventListener("click", async () => {
-  authMessage("Signing in…");
+function readAuthFields() {
   const email = $("authEmail").value.trim();
   const password = $("authPassword").value;
-  const { data, error } = await db.auth.signInWithPassword({ email, password });
-  if (error) return authMessage(error.message, true);
-  authMessage("");
-  await enterApp(data.user);
+  if (!email) { authMessage("Enter your email address first.", true); $("authEmail").focus(); return null; }
+  if (!$("authEmail").checkValidity()) { authMessage("Enter a valid email address.", true); $("authEmail").focus(); return null; }
+  if (!password) { authMessage("Enter your password first.", true); $("authPassword").focus(); return null; }
+  if (password.length < 6) { authMessage("Password must be at least 6 characters.", true); $("authPassword").focus(); return null; }
+  return { email, password };
+}
+
+$("signInBtn").addEventListener("click", async () => {
+  const credentials = readAuthFields();
+  if (!credentials) return;
+  authMessage("Signing in…");
+  try {
+    const { data, error } = await db.auth.signInWithPassword(credentials);
+    if (error) return authMessage(error.message, true);
+    authMessage("");
+    await enterApp(data.user);
+  } catch (error) { authMessage(error?.message || "Could not sign in. Try again.", true); }
 });
 
 $("signUpBtn").addEventListener("click", async () => {
+  const credentials = readAuthFields();
+  if (!credentials) return;
   authMessage("Creating account…");
-  const email = $("authEmail").value.trim();
-  const password = $("authPassword").value;
-  const { data, error } = await db.auth.signUp({ email, password });
-  if (error) return authMessage(error.message, true);
-  if (data.session && data.user) {
-    authMessage("");
-    await enterApp(data.user);
-  } else {
-    authMessage("Account created. Check your email to confirm it, then sign in.");
-  }
+  try {
+    const { data, error } = await db.auth.signUp(credentials);
+    if (error) return authMessage(error.message, true);
+    if (data.session && data.user) {
+      authMessage("");
+      await enterApp(data.user);
+    } else {
+      authMessage("Account created. Check your email to confirm it, then sign in.");
+    }
+  } catch (error) { authMessage(error?.message || "Could not create the account. Try again.", true); }
+});
+
+$("authForm").addEventListener("submit", (event) => { event.preventDefault(); $("signInBtn").click(); });
+
+$("previewBtn").addEventListener("click", () => {
+  $("authGate").hidden = true;
+  $("appShell").hidden = false;
+  showMessage("Preview mode — sign in before saving books.");
 });
 
 $("avatarBtn").addEventListener("click", async () => {

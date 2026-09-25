@@ -388,3 +388,5 @@ button { color: inherit; }
   display: flex; gap: 9px; align-items: center; justify-content: space-between;
 }
 .conflict-bar button { border: 0; border-radius: 9px; padding: 7px 9px; background: white; color: #145a57; font-weight: 800; }
+
+.preview-btn { width:100%; margin-top:10px; padding:10px 8px; border:0; background:transparent; color:var(--berry); font-weight:800; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
