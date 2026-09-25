@@ -19,8 +19,19 @@
 
     <section class="search-wrap" aria-label="Book search mockup">
       <span class="search-icon">⌕</span>
-      <input type="search" placeholder="Search title, author, or ISBN">
+      <input id="bookSearch" type="search" placeholder="Search title, author, or ISBN" autocomplete="off">
       <button class="scan-btn" aria-label="Scan ISBN">▥</button>
+    </section>
+
+    <section id="searchResultsPanel" class="search-results-panel" hidden>
+      <div class="results-head">
+        <div>
+          <strong>Find a Book</strong>
+          <small id="searchStatus">Search by title, author, or ISBN</small>
+        </div>
+        <button id="closeSearchResults" aria-label="Close search results">×</button>
+      </div>
+      <div id="searchResults" class="search-results"></div>
     </section>
 
     <section class="library-section open" data-section>
