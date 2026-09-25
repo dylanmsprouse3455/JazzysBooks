@@ -132,17 +132,14 @@ function showPasswordRecovery(user) {
   $("emailFieldWrap").hidden = true;
   $("forgotPasswordRow").hidden = true;
   $("passwordFieldWrap").hidden = false;
-  $("confirmPasswordWrap").hidden = false;
   $("authPassword").required = true;
-  $("authPasswordConfirm").required = true;
   $("passwordFieldLabel").textContent = "New password";
   $("authPassword").autocomplete = "new-password";
   $("authPassword").placeholder = "Create a new password";
   $("authSubtitle").textContent = "Choose a new password for your library.";
-  $("authHelper").textContent = "Use at least 6 characters, then type the same password again.";
+  $("authHelper").textContent = "Use at least 6 characters, then save your new password.";
   $("authSubmitBtn").textContent = authSubmitLabel();
   $("authPassword").value = "";
-  $("authPasswordConfirm").value = "";
   authMessage("Reset link accepted. Choose your new password below.", "success");
   setTimeout(() => $("authPassword").focus(), 0);
 }
@@ -552,11 +549,6 @@ function readAuthFields() {
     $("authPassword").focus();
     return null;
   }
-  if ((authMode === "signup" || authMode === "password-reset") && password !== confirmPassword) {
-    authMessage("Those passwords don't match yet.", "error");
-    $("authPasswordConfirm").focus();
-    return null;
-  }
   return { email, password };
 }
 
@@ -686,7 +678,7 @@ $("authForm").addEventListener("submit", async (event) => {
   await submitAuth();
 });
 
-["authEmail", "authPassword", "authPasswordConfirm"].forEach((id) => {
+["authEmail", "authPassword"].forEach((id) => {
   $(id).addEventListener("input", () => {
     if ($("authMessage").classList.contains("error")) authMessage("");
   });
