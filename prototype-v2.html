@@ -14,13 +14,13 @@
       <h1>Jazzy's Books</h1>
       <p id="authSubtitle" class="auth-subtitle">Welcome back. Your library is waiting.</p>
 
-      <div class="auth-mode-switch" role="tablist" aria-label="Account access">
+      <div id="authModeSwitch" class="auth-mode-switch" role="tablist" aria-label="Account access">
         <button id="signInBtn" class="auth-mode active" type="button" role="tab" aria-selected="true">Sign in</button>
         <button id="signUpBtn" class="auth-mode" type="button" role="tab" aria-selected="false">Create account</button>
       </div>
 
       <form id="authForm" novalidate>
-        <label class="auth-field" for="authEmail">
+        <label id="emailFieldWrap" class="auth-field" for="authEmail">
           <span>Email</span>
           <div class="auth-input-shell">
             <span class="auth-input-icon" aria-hidden="true">✉</span>
@@ -28,14 +28,18 @@
           </div>
         </label>
 
-        <label class="auth-field" for="authPassword">
-          <span>Password</span>
+        <label id="passwordFieldWrap" class="auth-field" for="authPassword">
+          <span id="passwordFieldLabel">Password</span>
           <div class="auth-input-shell">
             <span class="auth-input-icon" aria-hidden="true">●</span>
             <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" minlength="6" required>
             <button id="togglePasswordBtn" class="password-toggle" type="button" aria-label="Show password">Show</button>
           </div>
         </label>
+
+        <div id="forgotPasswordRow" class="auth-inline-action">
+          <button id="forgotPasswordBtn" type="button">Forgot password?</button>
+        </div>
 
         <label id="confirmPasswordWrap" class="auth-field" for="authPasswordConfirm" hidden>
           <span>Confirm password</span>

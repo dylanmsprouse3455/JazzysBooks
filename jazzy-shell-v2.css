@@ -14,6 +14,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { background: #cdeee9; }
 body {
   margin: 0;
@@ -583,3 +584,23 @@ button { color: inherit; }
 }
 .conflict-bar button { border: 0; border-radius: 9px; padding: 7px 9px; background: white; color: #145a57; font-weight: 800; }
 
+.auth-inline-action {
+  display: flex;
+  justify-content: flex-end;
+  margin: 7px 2px -1px;
+}
+.auth-inline-action button {
+  border: 0;
+  padding: 4px 2px;
+  background: transparent;
+  color: #168f87;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.auth-inline-action button:disabled { opacity: .55; cursor: wait; }
+.auth-submit {
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+.auth-submit:not(:disabled):active { transform: translateY(1px); box-shadow: 0 6px 14px rgba(20,90,87,.18); }
+.auth-mode, .preview-btn, .password-toggle, .auth-inline-action button { -webkit-tap-highlight-color: transparent; }
