@@ -10,19 +10,50 @@
 <body>
   <div id="authGate" class="auth-gate">
     <div class="auth-card">
-      <div class="auth-books">📚</div>
+      <div class="auth-brand-mark" aria-hidden="true">📚</div>
       <h1>Jazzy's Books</h1>
-      <p>Sign in to open your library.</p>
+      <p id="authSubtitle" class="auth-subtitle">Welcome back. Your library is waiting.</p>
+
+      <div class="auth-mode-switch" role="tablist" aria-label="Account access">
+        <button id="signInBtn" class="auth-mode active" type="button" role="tab" aria-selected="true">Sign in</button>
+        <button id="signUpBtn" class="auth-mode" type="button" role="tab" aria-selected="false">Create account</button>
+      </div>
+
       <form id="authForm" novalidate>
-        <input id="authEmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email" required>
-        <input id="authPassword" name="password" type="password" autocomplete="new-password" placeholder="Password (6+ characters)" minlength="6" required>
-        <div class="auth-actions">
-          <button id="signInBtn" type="button" class="primary-btn">Sign in</button>
-          <button id="signUpBtn" type="button">Create account</button>
-        </div>
+        <label class="auth-field" for="authEmail">
+          <span>Email</span>
+          <div class="auth-input-shell">
+            <span class="auth-input-icon" aria-hidden="true">✉</span>
+            <input id="authEmail" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="you@example.com" required>
+          </div>
+        </label>
+
+        <label class="auth-field" for="authPassword">
+          <span>Password</span>
+          <div class="auth-input-shell">
+            <span class="auth-input-icon" aria-hidden="true">●</span>
+            <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" minlength="6" required>
+            <button id="togglePasswordBtn" class="password-toggle" type="button" aria-label="Show password">Show</button>
+          </div>
+        </label>
+
+        <label id="confirmPasswordWrap" class="auth-field" for="authPasswordConfirm" hidden>
+          <span>Confirm password</span>
+          <div class="auth-input-shell">
+            <span class="auth-input-icon" aria-hidden="true">●</span>
+            <input id="authPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" placeholder="Type it again" minlength="6">
+          </div>
+        </label>
+
+        <p id="authHelper" class="auth-helper">Use the email and password for your Jazzy's Books account.</p>
+        <button id="authSubmitBtn" class="auth-submit" type="submit">Sign in</button>
       </form>
-      <button id="previewBtn" class="preview-btn" type="button">Preview the library without signing in</button>
-      <p id="authMessage" class="auth-message"></p>
+
+      <div id="authMessage" class="auth-message" role="status" aria-live="polite" hidden></div>
+
+      <div class="auth-divider"><span>or</span></div>
+      <button id="previewBtn" class="preview-btn" type="button">Browse the app first</button>
+      <p class="auth-privacy">Your saved library stays private to your account.</p>
     </div>
   </div>
 

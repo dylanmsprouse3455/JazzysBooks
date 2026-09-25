@@ -32,9 +32,69 @@ function showMessage(message) {
   messageTimer = setTimeout(() => el.classList.remove("visible"), 2600);
 }
 
-function authMessage(message, isError = false) {
-  $("authMessage").textContent = message;
-  $("authMessage").classList.toggle("error", !!isError);
+let authMode = "signin";
+let authBusy = false;
+
+function authMessage(message, type = "info") {
+  const el = $("authMessage");
+  el.textContent = message || "";
+  el.hidden = !message;
+  el.classList.remove("error", "success");
+  if (message && type === "error") el.classList.add("error");
+  if (message && type === "success") el.classList.add("success");
+}
+
+function friendlyAuthError(error, mode = authMode) {
+  console.error("Jazzy auth error:", error);
+  const code = String(error?.code || "");
+  const status = Number(error?.status || 0);
+  const messages = {
+    invalid_credentials: "That email and password combination doesn't match. Check both and try again.",
+    email_not_confirmed: "Your email still needs to be confirmed. Open the confirmation email first, then sign in.",
+    email_address_invalid: "That email address doesn't look valid. Check it and try again.",
+    weak_password: "That password is too easy to guess. Choose a stronger password and try again.",
+    user_already_exists: "An account already exists for that email. Switch to Sign in instead.",
+    signup_disabled: "New account creation is currently unavailable.",
+    over_email_send_rate_limit: "Too many emails were requested. Wait a little while and try again.",
+    over_request_rate_limit: "Too many attempts were made. Wait a moment and try again.",
+    captcha_failed: "The security check couldn't be completed. Reload the page and try again."
+  };
+  if (messages[code]) return messages[code];
+  if (status === 429) return "Too many attempts were made. Wait a moment and try again.";
+  return mode === "signup"
+    ? "We couldn't create the account. Check the information and try again."
+    : "We couldn't sign you in. Check the information and try again.";
+}
+
+function setAuthBusy(busy, label = "") {
+  authBusy = busy;
+  $("signInBtn").disabled = busy;
+  $("signUpBtn").disabled = busy;
+  $("authSubmitBtn").disabled = busy;
+  $("previewBtn").disabled = busy;
+  $("authSubmitBtn").textContent = busy ? label : (authMode === "signup" ? "Create account" : "Sign in");
+}
+
+function setAuthMode(mode, clearMessage = true) {
+  authMode = mode === "signup" ? "signup" : "signin";
+  const signingUp = authMode === "signup";
+  $("signInBtn").classList.toggle("active", !signingUp);
+  $("signUpBtn").classList.toggle("active", signingUp);
+  $("signInBtn").setAttribute("aria-selected", String(!signingUp));
+  $("signUpBtn").setAttribute("aria-selected", String(signingUp));
+  $("confirmPasswordWrap").hidden = !signingUp;
+  $("authPasswordConfirm").required = signingUp;
+  $("authPassword").autocomplete = signingUp ? "new-password" : "current-password";
+  $("authPassword").placeholder = signingUp ? "Create a password" : "Enter your password";
+  $("authSubtitle").textContent = signingUp
+    ? "Create your private library and keep it synced."
+    : "Welcome back. Your library is waiting.";
+  $("authHelper").textContent = signingUp
+    ? "Use at least 6 characters. We'll send an email if confirmation is required."
+    : "Use the email and password for your Jazzy's Books account.";
+  $("authSubmitBtn").textContent = signingUp ? "Create account" : "Sign in";
+  if (!signingUp) $("authPasswordConfirm").value = "";
+  if (clearMessage) authMessage("");
 }
 
 function normalizeStatus(status) {
@@ -421,61 +481,117 @@ $("reloadLibraryBtn").addEventListener("click", async () => {
 function readAuthFields() {
   const email = $("authEmail").value.trim();
   const password = $("authPassword").value;
-  if (!email) { authMessage("Enter your email address first.", true); $("authEmail").focus(); return null; }
-  if (!$("authEmail").checkValidity()) { authMessage("Enter a valid email address.", true); $("authEmail").focus(); return null; }
-  if (!password) { authMessage("Enter your password first.", true); $("authPassword").focus(); return null; }
-  if (password.length < 6) { authMessage("Password must be at least 6 characters.", true); $("authPassword").focus(); return null; }
+  const confirmPassword = $("authPasswordConfirm").value;
+
+  if (!email) {
+    authMessage("Enter your email address.", "error");
+    $("authEmail").focus();
+    return null;
+  }
+  if (!$("authEmail").checkValidity()) {
+    authMessage("Enter a valid email address.", "error");
+    $("authEmail").focus();
+    return null;
+  }
+  if (!password) {
+    authMessage(authMode === "signup" ? "Create a password." : "Enter your password.", "error");
+    $("authPassword").focus();
+    return null;
+  }
+  if (password.length < 6) {
+    authMessage("Password must be at least 6 characters.", "error");
+    $("authPassword").focus();
+    return null;
+  }
+  if (authMode === "signup" && password !== confirmPassword) {
+    authMessage("Those passwords don't match yet.", "error");
+    $("authPasswordConfirm").focus();
+    return null;
+  }
   return { email, password };
 }
 
-$("signInBtn").addEventListener("click", async () => {
+async function submitAuth() {
+  if (authBusy) return;
   const credentials = readAuthFields();
   if (!credentials) return;
-  authMessage("Signing in…");
-  try {
-    const { data, error } = await db.auth.signInWithPassword(credentials);
-    if (error) return authMessage(error.message, true);
-    authMessage("");
-    await enterApp(data.user);
-  } catch (error) { authMessage(error?.message || "Could not sign in. Try again.", true); }
-});
 
-$("signUpBtn").addEventListener("click", async () => {
-  const credentials = readAuthFields();
-  if (!credentials) return;
-  authMessage("Creating account…");
+  const isSignup = authMode === "signup";
+  authMessage(isSignup ? "Creating your account…" : "Signing you in…");
+  setAuthBusy(true, isSignup ? "Creating account…" : "Signing in…");
+
   try {
+    if (!isSignup) {
+      const { data, error } = await db.auth.signInWithPassword(credentials);
+      if (error) {
+        authMessage(friendlyAuthError(error, "signin"), "error");
+        return;
+      }
+      if (!data?.user) {
+        authMessage("We couldn't open that account. Try signing in again.", "error");
+        return;
+      }
+      authMessage("");
+      await enterApp(data.user);
+      return;
+    }
+
     const { data, error } = await db.auth.signUp({
       email: credentials.email,
       password: credentials.password,
       options: {
-        emailRedirectTo: window.location.origin + window.location.pathname
+        emailRedirectTo: window.location.origin + "/JazzysBooks/"
       }
     });
+
     if (error) {
-      if (error.code === "signup_disabled") {
-        return authMessage("Account creation is disabled in Supabase right now.", true);
-      }
-      return authMessage(error.message, true);
+      authMessage(friendlyAuthError(error, "signup"), "error");
+      return;
     }
-    if (data.session && data.user) {
+
+    if (data?.session && data?.user) {
       authMessage("");
       await enterApp(data.user);
-    } else {
-      authMessage("Account created. Check your email to confirm it, then sign in.");
+      return;
     }
-  } catch (error) { authMessage(error?.message || "Could not create the account. Try again.", true); }
+
+    setAuthMode("signin", false);
+    $("authPassword").value = "";
+    authMessage("Account created. Check your email for the confirmation link, then come back here and sign in.", "success");
+  } catch (error) {
+    authMessage(friendlyAuthError(error, isSignup ? "signup" : "signin"), "error");
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+$("signInBtn").addEventListener("click", () => setAuthMode("signin"));
+$("signUpBtn").addEventListener("click", () => setAuthMode("signup"));
+
+$("togglePasswordBtn").addEventListener("click", () => {
+  const showing = $("authPassword").type === "text";
+  const nextType = showing ? "password" : "text";
+  $("authPassword").type = nextType;
+  $("authPasswordConfirm").type = nextType;
+  $("togglePasswordBtn").textContent = showing ? "Show" : "Hide";
+  $("togglePasswordBtn").setAttribute("aria-label", showing ? "Show password" : "Hide password");
 });
 
-$("authForm").addEventListener("submit", (event) => { event.preventDefault(); $("signInBtn").click(); });
+$("authForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitAuth();
+});
 
 $("previewBtn").addEventListener("click", () => {
+  authMessage("");
   $("authGate").hidden = true;
   $("appShell").hidden = false;
   $("bottomNav").hidden = false;
   renderLibrary();
   showMessage("Preview mode — sign in before searching or saving books.");
 });
+
+setAuthMode("signin");
 
 $("avatarBtn").addEventListener("click", async () => {
   if (!currentUser) {
@@ -491,7 +607,7 @@ $("avatarBtn").addEventListener("click", async () => {
 db.auth.onAuthStateChange((event, session) => {
   if (event === "SIGNED_IN" && session?.user && currentUser?.id !== session.user.id) {
     setTimeout(() => enterApp(session.user).catch((error) => {
-      authMessage(error?.message || "Could not open the library.", true);
+      authMessage("We signed you in, but couldn't open the library. Try again.", "error");
       leaveApp();
     }), 0);
   }
@@ -503,7 +619,7 @@ db.auth.onAuthStateChange((event, session) => {
     try {
       await enterApp(session.user);
     } catch (error) {
-      authMessage(error?.message || "Could not load the library.", true);
+      authMessage("We couldn't load your library. Try signing in again.", "error");
       leaveApp();
     }
   } else {
