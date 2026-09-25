@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fff8f3">
+  <title>Jazzy's Books</title>
+  <link rel="stylesheet" href="./jazzy-shell-v2.css">
+</head>
+<body>
+  <div id="authGate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-books">📚</div>
+      <h1>Jazzy's Books</h1>
+      <p>Sign in to open your library.</p>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="Email">
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password">
+      <div class="auth-actions">
+        <button id="signInBtn" class="primary-btn">Sign in</button>
+        <button id="signUpBtn">Create account</button>
+      </div>
+      <p id="authMessage" class="auth-message"></p>
+    </div>
+  </div>
+
+  <div id="conflictBar" class="conflict-bar" hidden>
+    <span>A newer copy of this library exists. Nothing was overwritten.</span>
+    <button id="reloadLibraryBtn">Reload newer copy</button>
+  </div>
+
+  <main id="appShell" class="app-shell" hidden>
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">📚</div>
+      <div class="brand-copy">
+        <h1>Jazzy's Books <span>♥</span></h1>
+        <p>GOOD BOOKS &nbsp;•&nbsp; BRIGHTER DAYS</p>
+      </div>
+      <button id="avatarBtn" class="avatar" aria-label="Account">J</button>
+    </header>
+
+    <section class="search-wrap" aria-label="Search for books">
+      <button id="bookSearchBtn" class="search-icon search-submit" aria-label="Search">⌕</button>
+      <input id="bookSearchInput" type="search" placeholder="Search title, author, or ISBN" autocomplete="off">
+      <button id="scanBtn" class="scan-btn" aria-label="Barcode scanning coming later" title="Barcode scanning coming later">▥</button>
+    </section>
+
+    <section id="searchResultsPanel" class="search-results-panel" hidden>
+      <div class="search-results-head">
+        <div>
+          <h2>Find a Book</h2>
+          <p id="searchSummary">Choose the correct book to add it.</p>
+        </div>
+        <button id="closeSearchResults" class="round-close" aria-label="Close search results">×</button>
+      </div>
+      <div id="searchLoading" class="search-loading" hidden>Searching the shelves…</div>
+      <div id="searchResultsGrid" class="search-result-grid"></div>
+      <p class="metadata-credit">Book metadata from <a href="https://openlibrary.org/" target="_blank" rel="noopener">Open Library</a>.</p>
+    </section>
+
+    <div id="librarySections">
+      <section class="library-section open" data-section data-kind="reading">
+        <button class="section-head" data-collapse>
+          <span class="section-title"><span class="section-icon">▣</span> Currently Reading <small id="readingCount">(0)</small></span>
+          <span class="chevron">⌃</span>
+        </button>
+        <div class="section-body">
+          <div class="book-grid" id="readingGrid"></div>
+          <div class="detail-slot" id="readingDetails"></div>
+        </div>
+      </section>
+
+      <section class="library-section open" data-section data-kind="want">
+        <button class="section-head" data-collapse>
+          <span class="section-title"><span class="section-icon">♥</span> Want to Read <small id="wantCount">(0)</small></span>
+          <span class="chevron">⌃</span>
+        </button>
+        <div class="section-body">
+          <div class="book-grid" id="wantGrid"></div>
+          <div class="detail-slot" id="wantDetails"></div>
+        </div>
+      </section>
+
+      <section class="library-section" data-section data-kind="finished">
+        <button class="section-head" data-collapse>
+          <span class="section-title"><span class="section-icon">✓</span> Finished <small id="finishedCount">(0)</small></span>
+          <span class="chevron">⌄</span>
+        </button>
+        <div class="section-body">
+          <div class="book-grid" id="finishedGrid"></div>
+          <div class="detail-slot" id="finishedDetails"></div>
+        </div>
+      </section>
+
+      <section class="library-section" data-section data-kind="favorites">
+        <button class="section-head" data-collapse>
+          <span class="section-title"><span class="section-icon">★</span> Favorites <small id="favoritesCount">(0)</small></span>
+          <span class="chevron">⌄</span>
+        </button>
+        <div class="section-body">
+          <div class="book-grid" id="favoritesGrid"></div>
+          <div class="detail-slot" id="favoritesDetails"></div>
+        </div>
+      </section>
+    </div>
+
+    <div id="appMessage" class="app-message" aria-live="polite"></div>
+  </main>
+
+  <nav id="bottomNav" class="bottom-nav" aria-label="Primary navigation" hidden>
+    <button class="active"><span>⌂</span>Library</button>
+    <button id="navSearch"><span>⌕</span>Search</button>
+    <button><span>▥</span>Stats</button>
+    <button><span>☷</span>Lists</button>
+    <button id="navAdd" class="add-book" aria-label="Find and add a book">＋</button>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.min.js"></script>
+  <script src="./jazzy-shell-v2.js"></script>
+</body>
+</html>
