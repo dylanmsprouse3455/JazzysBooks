@@ -357,6 +357,7 @@ button { color: inherit; }
   color: #145a57;
   box-shadow: 0 4px 14px rgba(20,90,87,.12);
 }
+.auth-field[hidden] { display: none !important; }
 .auth-field {
   display: block;
   margin-top: 12px;
