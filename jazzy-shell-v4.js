@@ -1,0 +1,802 @@
+const SUPABASE_URL = "https://hhigjlsdhqdvzafiwbcy.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_GITyU6W9iGX909WZX-nPqw_FBpob_wN";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+
+let currentUser = null;
+let books = [];
+let libraryRevision = null;
+let conflictActive = false;
+let searchResults = [];
+let messageTimer = null;
+
+const $ = (id) => document.getElementById(id);
+const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+  "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+}[ch]));
+function safeHttpUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function showMessage(message) {
+  const el = $("appMessage");
+  el.textContent = message;
+  el.classList.add("visible");
+  clearTimeout(messageTimer);
+  messageTimer = setTimeout(() => el.classList.remove("visible"), 2600);
+}
+
+let authMode = "signin";
+let authBusy = false;
+let recoveryUser = null;
+const LOCAL_AUTH_REDIRECT_URL = "https://dylanmsprouse3455.github.io/JazzysBooks/";
+const currentAuthBaseUrl = new URL(".", window.location.href).href.split("#")[0].split("?")[0];
+const AUTH_REDIRECT_URL = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+  ? LOCAL_AUTH_REDIRECT_URL
+  : currentAuthBaseUrl;
+const RECOVERY_LINK_AT_LOAD = /(?:[?#&])type=recovery(?:&|$)/.test(window.location.href);
+
+function authUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (window.location.hash) {
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    hashParams.forEach((value, key) => params.set(key, value));
+  }
+  return params;
+}
+
+function authLinkProblem() {
+  const params = authUrlParams();
+  const errorCode = String(params.get("error_code") || params.get("error") || "").toLowerCase();
+  const description = String(params.get("error_description") || "").toLowerCase();
+  if (!errorCode && !description) return "";
+  if (errorCode.includes("otp_expired") || description.includes("expired")) {
+    return "That link has expired. Request a new email and use the latest link.";
+  }
+  if (errorCode || description) {
+    return "That sign-in link is invalid or has already been used. Request a new email and try again.";
+  }
+  return "";
+}
+
+function authMessage(message, type = "info") {
+  const el = $("authMessage");
+  el.textContent = message || "";
+  el.hidden = !message;
+  el.classList.remove("error", "success");
+  if (message && type === "error") el.classList.add("error");
+  if (message && type === "success") el.classList.add("success");
+}
+
+function friendlyAuthError(error, mode = authMode) {
+  console.warn("Jazzy auth warning:", error);
+  const code = String(error?.code || "").toLowerCase();
+  const status = Number(error?.status || 0);
+  const raw = String(error?.message || "").toLowerCase();
+  const messages = {
+    invalid_credentials: "That email or password doesn't match. Check both and try again.",
+    email_not_confirmed: "Confirm your email first. Check your inbox for the Jazzy's Books confirmation message.",
+    email_address_invalid: "That email address doesn't look valid. Check it and try again.",
+    weak_password: "Choose a stronger password and try again.",
+    user_already_exists: "An account already exists with that email. Switch to Sign in instead.",
+    email_exists: "An account already exists with that email. Switch to Sign in instead.",
+    signup_disabled: "New account creation is temporarily unavailable.",
+    over_email_send_rate_limit: "Too many emails were requested. Wait a little while and try again.",
+    over_request_rate_limit: "Too many attempts were made. Wait a moment and try again.",
+    otp_expired: "That link has expired. Request a new email and use the latest link.",
+    captcha_failed: "The security check couldn't be completed. Reload the page and try again.",
+    same_password: "Choose a new password that is different from your current password."
+  };
+  if (messages[code]) return messages[code];
+  if (raw.includes("failed to fetch") || raw.includes("network")) {
+    return "We couldn't reach the login service. Check your connection and try again.";
+  }
+  if (raw.includes("already registered") || raw.includes("already exists")) {
+    return "An account already exists with that email. Switch to Sign in instead.";
+  }
+  if (raw.includes("not confirmed")) {
+    return "Confirm your email first. Check your inbox for the Jazzy's Books confirmation message.";
+  }
+  if (raw.includes("expired") || raw.includes("invalid token") || raw.includes("invalid otp")) {
+    return "That link is expired or invalid. Request a new email and use the latest link.";
+  }
+  if (status === 429) return "Too many attempts were made. Wait a moment and try again.";
+  if (mode === "signup") return "We couldn't create the account. Check the information and try again.";
+  if (mode === "password-reset") return "We couldn't update the password. Try again.";
+  if (mode === "forgot") return "We couldn't send the reset email. Check the address and try again.";
+  return "We couldn't sign you in. Check the information and try again.";
+}
+
+function authSubmitLabel() {
+  if (authMode === "signup") return "Create account";
+  if (authMode === "password-reset") return "Save new password";
+  return "Sign in";
+}
+
+function setAuthBusy(busy, label = "") {
+  authBusy = busy;
+  ["signInBtn", "signUpBtn", "authSubmitBtn", "previewBtn", "forgotPasswordBtn", "togglePasswordBtn"]
+    .forEach((id) => { if ($(id)) $(id).disabled = busy; });
+  $("authSubmitBtn").setAttribute("aria-busy", String(busy));
+  $("authSubmitBtn").textContent = busy ? label : authSubmitLabel();
+}
+
+function resetPasswordControl() {
+  $("authPassword").type = "password";
+  $("togglePasswordBtn").textContent = "Show";
+  $("togglePasswordBtn").setAttribute("aria-label", "Show password");
+}
+
+function setAuthMode(mode, clearMessage = true) {
+  authMode = mode === "signup" ? "signup" : "signin";
+  recoveryUser = null;
+  const signingUp = authMode === "signup";
+
+  $("authModeSwitch").hidden = false;
+  $("emailFieldWrap").hidden = false;
+  $("passwordFieldWrap").hidden = false;
+  $("forgotPasswordRow").hidden = signingUp;
+  document.querySelector(".auth-divider").hidden = false;
+  $("previewBtn").hidden = false;
+  document.querySelector(".auth-privacy").hidden = false;
+  $("signInBtn").classList.toggle("active", !signingUp);
+  $("signUpBtn").classList.toggle("active", signingUp);
+  $("signInBtn").setAttribute("aria-selected", String(!signingUp));
+  $("signUpBtn").setAttribute("aria-selected", String(signingUp));
+  $("authPassword").required = true;
+  $("authEmail").required = true;
+  $("passwordFieldLabel").textContent = "Password";
+  $("authPassword").autocomplete = signingUp ? "new-password" : "current-password";
+  $("authPassword").placeholder = signingUp ? "Create a password" : "Enter your password";
+  $("authPassword").value = "";
+  resetPasswordControl();
+  $("authSubtitle").textContent = signingUp
+    ? "Create your private library and keep it synced."
+    : "Welcome back. Your library is waiting.";
+  $("authHelper").textContent = signingUp
+    ? "Use at least 6 characters. We'll send a confirmation email if one is required."
+    : "Use the email and password for your Jazzy's Books account.";
+  $("authSubmitBtn").textContent = authSubmitLabel();
+
+  if (clearMessage) authMessage("");
+}
+
+function showPasswordRecovery(user) {
+  authMode = "password-reset";
+  recoveryUser = user || recoveryUser;
+  $("authGate").hidden = false;
+  $("appShell").hidden = true;
+  $("bottomNav").hidden = true;
+  $("authModeSwitch").hidden = true;
+  $("emailFieldWrap").hidden = true;
+  $("forgotPasswordRow").hidden = true;
+  document.querySelector(".auth-divider").hidden = true;
+  $("previewBtn").hidden = true;
+  document.querySelector(".auth-privacy").hidden = true;
+  $("passwordFieldWrap").hidden = false;
+  $("authPassword").required = true;
+  $("passwordFieldLabel").textContent = "New password";
+  $("authPassword").autocomplete = "new-password";
+  $("authPassword").placeholder = "Create a new password";
+  $("authSubtitle").textContent = "Choose a new password for your library.";
+  $("authHelper").textContent = "Use at least 6 characters, then save your new password.";
+  $("authSubmitBtn").textContent = authSubmitLabel();
+  $("authPassword").value = "";
+  resetPasswordControl();
+  authMessage("Reset link accepted. Choose your new password below.", "success");
+  setTimeout(() => $("authPassword").focus(), 0);
+}
+
+function normalizeStatus(status) {
+  const value = String(status || "").toLowerCase();
+  if (["want", "want_to_read", "tbr"].includes(value)) return "want";
+  if (["reading", "currently_reading", "current"].includes(value)) return "reading";
+  if (["read", "finished", "complete", "completed"].includes(value)) return "finished";
+  return "finished";
+}
+
+function nextBookId() {
+  return books.length ? Math.max(...books.map((b) => Number(b.id) || 0)) + 1 : 1;
+}
+
+function coverMarkup(book) {
+  const cover = safeHttpUrl(book.cover_url);
+  if (cover) {
+    return '<img class="book-cover-image" src="' + escapeHtml(cover) + '" alt="Cover of ' + escapeHtml(book.title) + '" loading="lazy">';
+  }
+  return '<div class="cover-fallback">' + escapeHtml(book.title || "Untitled") + "</div>";
+}
+
+function bookCard(book, kind) {
+  return '<article class="book-card" data-open-book="' + Number(book.id) + '" data-kind="' + kind + '">' +
+    coverMarkup(book) +
+    "<h3>" + escapeHtml(book.title || "Untitled") + "</h3>" +
+    "<p>" + escapeHtml(book.author || "Unknown author") + "</p>" +
+    "</article>";
+}
+
+function emptyMarkup(label) {
+  return '<div class="empty-section">No books here yet. Search above to add one.</div>';
+}
+
+function renderLibrary() {
+  const groups = {
+    reading: books.filter((b) => normalizeStatus(b.status) === "reading"),
+    want: books.filter((b) => normalizeStatus(b.status) === "want"),
+    finished: books.filter((b) => normalizeStatus(b.status) === "finished"),
+    favorites: books.filter((b) => !!b.favorite)
+  };
+
+  for (const kind of Object.keys(groups)) {
+    const list = groups[kind];
+    $(kind + "Count").textContent = "(" + list.length + ")";
+    $(kind + "Grid").innerHTML = list.length ? list.map((b) => bookCard(b, kind)).join("") : emptyMarkup(kind);
+  }
+}
+
+function detailsMarkup(book) {
+  const description = book.description || book.comment || "No description saved yet.";
+  const series = book.series || "—";
+  const year = book.published_year || book.publish_date || "—";
+  const publisher = book.publisher || (Array.isArray(book.publishers) ? book.publishers[0] : "") || "—";
+  const pages = book.page_count || "—";
+  const isbn = book.isbn || book.isbn13 || book.isbn10 || "—";
+  const stars = Number(book.rating || 0);
+  const rating = stars ? "★".repeat(Math.min(stars, 5)) + "☆".repeat(Math.max(0, 5 - stars)) : "Not rated";
+
+  return '<article class="detail-card dynamic-detail">' +
+    '<button class="detail-close" data-close-detail aria-label="Collapse book details">×</button>' +
+    '<div class="detail-intro">' +
+      '<div class="detail-cover-wrap">' + coverMarkup(book) + "</div>" +
+      "<div><h2>" + escapeHtml(book.title) + "</h2>" +
+      '<p class="detail-author">' + escapeHtml(book.author || "Unknown author") + "</p>" +
+      '<p class="description">' + escapeHtml(description) + "</p>" +
+      (safeHttpUrl(book.source_url) ? '<p class="detail-meta-source"><a target="_blank" rel="noopener" href="' + escapeHtml(safeHttpUrl(book.source_url)) + '">View source record</a></p>' : "") +
+      "</div>" +
+    "</div>" +
+    '<div class="detail-grid"><div class="facts">' +
+      "<div><span>Author</span><b>" + escapeHtml(book.author || "—") + "</b></div>" +
+      "<div><span>Series</span><b>" + escapeHtml(series) + "</b></div>" +
+      "<div><span>Year</span><b>" + escapeHtml(year) + "</b></div>" +
+      "<div><span>Publisher</span><b>" + escapeHtml(publisher) + "</b></div>" +
+      "<div><span>Pages</span><b>" + escapeHtml(pages) + "</b></div>" +
+      "<div><span>ISBN</span><b>" + escapeHtml(isbn) + "</b></div>" +
+      '<div><span>Rating</span><b class="stars">' + escapeHtml(rating) + "</b></div>" +
+    '</div><div class="detail-actions">' +
+      '<button class="primary-btn" data-status-book="' + Number(book.id) + '" data-status="reading">▣ Reading</button>' +
+      '<button data-status-book="' + Number(book.id) + '" data-status="want_to_read">♥ Want to Read</button>' +
+      '<button data-status-book="' + Number(book.id) + '" data-status="read">✓ Finished</button>' +
+      '<button data-favorite-book="' + Number(book.id) + '">' + (book.favorite ? "★ Unfavorite" : "☆ Favorite") + "</button>" +
+    "</div></div></article>";
+}
+
+function openBookDetails(id, kind) {
+  const book = books.find((b) => Number(b.id) === Number(id));
+  if (!book) return;
+  document.querySelectorAll(".detail-slot").forEach((slot) => slot.innerHTML = "");
+  $(kind + "Details").innerHTML = detailsMarkup(book);
+}
+
+async function loadLibrary() {
+  const { data, error } = await db.from("jazzy_book_libraries")
+    .select("books, revision")
+    .eq("user_id", currentUser.id)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  if (!data) {
+    const { data: created, error: createError } = await db.from("jazzy_book_libraries")
+      .insert({ user_id: currentUser.id, books: [] })
+      .select("books, revision")
+      .single();
+    if (createError) throw createError;
+    books = created.books || [];
+    libraryRevision = Number(created.revision || 1);
+  } else {
+    books = Array.isArray(data.books) ? data.books : [];
+    libraryRevision = Number(data.revision || 1);
+  }
+
+  conflictActive = false;
+  $("conflictBar").hidden = true;
+  renderLibrary();
+}
+
+async function saveLibrary() {
+  if (conflictActive) return false;
+
+  const expected = libraryRevision;
+  const { data, error } = await db.rpc("save_jazzy_book_library", {
+    p_books: books,
+    p_expected_revision: expected
+  });
+
+  if (error) {
+    showMessage("Save failed: " + error.message);
+    return false;
+  }
+
+  if (!data || !data.length) {
+    conflictActive = true;
+    $("conflictBar").hidden = false;
+    return false;
+  }
+
+  libraryRevision = Number(data[0].new_revision);
+  return true;
+}
+
+async function checkForNewerRevision() {
+  const { data, error } = await db.from("jazzy_book_libraries")
+    .select("revision")
+    .eq("user_id", currentUser.id)
+    .single();
+  if (error) throw error;
+  if (Number(data.revision) !== Number(libraryRevision)) {
+    conflictActive = true;
+    $("conflictBar").hidden = false;
+    return false;
+  }
+  return true;
+}
+
+async function runSearch() {
+  if (!currentUser) {
+    $("authGate").hidden = false;
+    authMessage("Sign in or create an account to search and save books.");
+    return;
+  }
+  const query = $("bookSearchInput").value.trim();
+  if (query.length < 2) {
+    showMessage("Type at least two characters.");
+    return;
+  }
+
+  $("searchResultsPanel").hidden = false;
+  $("searchLoading").hidden = false;
+  $("searchResultsGrid").innerHTML = "";
+  $("searchSummary").textContent = "Searching by title, author, or ISBN…";
+
+  const { data, error } = await db.functions.invoke("book-lookup", {
+    body: { action: "search", query }
+  });
+
+  $("searchLoading").hidden = true;
+
+  if (error || data?.error) {
+    $("searchSummary").textContent = "Search could not be completed.";
+    showMessage(data?.error || error?.message || "Search failed.");
+    return;
+  }
+
+  searchResults = Array.isArray(data.results) ? data.results : [];
+  $("searchSummary").textContent = searchResults.length
+    ? "Choose the correct book and where it belongs."
+    : "No matches found. Try another title, author, or ISBN.";
+
+  $("searchResultsGrid").innerHTML = searchResults.map((book, index) => {
+    const cover = book.coverUrl
+      ? '<img src="' + escapeHtml(book.coverUrl) + '" alt="Cover of ' + escapeHtml(book.title) + '" loading="lazy">'
+      : '<div class="cover-fallback">' + escapeHtml(book.title) + "</div>";
+
+    return '<article class="search-result-card">' +
+      cover +
+      "<h3>" + escapeHtml(book.title) + "</h3>" +
+      '<p class="result-author">' + escapeHtml((book.authors || []).join(", ") || "Unknown author") + "</p>" +
+      '<select data-result-status="' + index + '">' +
+        '<option value="want_to_read">Want to Read</option>' +
+        '<option value="reading">Currently Reading</option>' +
+        '<option value="read">Finished</option>' +
+      "</select>" +
+      '<button class="add-result" data-add-result="' + index + '">Add to My Library</button>' +
+    "</article>";
+  }).join("");
+}
+
+async function addSearchResult(index, button) {
+  if (!currentUser) {
+    $("authGate").hidden = false;
+    authMessage("Sign in or create an account to save books.");
+    return;
+  }
+  const selected = searchResults[index];
+  if (!selected) return;
+
+  const duplicate = books.some((book) =>
+    (selected.workKey && book.work_key === selected.workKey) ||
+    (selected.isbn && (book.isbn === selected.isbn || book.isbn13 === selected.isbn || book.isbn10 === selected.isbn))
+  );
+  if (duplicate) {
+    showMessage("That book is already in this library.");
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Finding details…";
+
+  try {
+    if (!(await checkForNewerRevision())) return;
+
+    let enriched = null;
+    if (selected.workKey) {
+      const response = await db.functions.invoke("book-lookup", {
+        body: { action: "enrich", workKey: selected.workKey }
+      });
+      if (!response.error && !response.data?.error) enriched = response.data;
+    }
+
+    const statusEl = document.querySelector('[data-result-status="' + index + '"]');
+    const status = statusEl ? statusEl.value : "want_to_read";
+    const authors = enriched?.authors?.map((a) => a.name).filter(Boolean)
+      || selected.authors
+      || [];
+
+    const book = {
+      id: nextBookId(),
+      title: enriched?.title || selected.title || "Untitled",
+      author: authors.join(", ") || "Unknown author",
+      series: enriched?.series?.[0] || selected.series?.[0] || "",
+      published_year: selected.firstPublishYear || enriched?.firstPublishDate || "",
+      publish_date: enriched?.publishDate || "",
+      status,
+      rating: "",
+      favorite: false,
+      comment: "",
+      description: enriched?.description || "",
+      publisher: enriched?.publishers?.[0] || selected.publishers?.[0] || "",
+      page_count: enriched?.pageCount || selected.pageCount || "",
+      isbn: enriched?.isbn || selected.isbn || "",
+      isbn13: enriched?.isbn13 || "",
+      isbn10: enriched?.isbn10 || "",
+      subjects: enriched?.subjects || selected.subjects || [],
+      cover_url: enriched?.coverUrl || selected.coverUrl || "",
+      cover_id: enriched?.coverId || selected.coverId || "",
+      work_key: selected.workKey || enriched?.workKey || "",
+      edition_key: enriched?.editionKey || "",
+      source_url: enriched?.sourceUrl || (selected.workKey ? "https://openlibrary.org" + selected.workKey : ""),
+      metadata_provider: "openlibrary",
+      source_text: selected.title || ""
+    };
+
+    books.push(book);
+    const saved = await saveLibrary();
+    if (!saved) {
+      books = books.filter((b) => Number(b.id) !== Number(book.id));
+      return;
+    }
+
+    renderLibrary();
+    button.textContent = "Added ✓";
+    showMessage("Added “" + book.title + "” to the library.");
+  } catch (error) {
+    showMessage(error?.message || "Could not add that book.");
+    button.disabled = false;
+    button.textContent = "Add to My Library";
+  }
+}
+
+async function updateBookStatus(id, patch) {
+  if (!(await checkForNewerRevision())) return;
+  const index = books.findIndex((b) => Number(b.id) === Number(id));
+  if (index < 0) return;
+  const previous = { ...books[index] };
+  books[index] = { ...books[index], ...patch };
+  if (!(await saveLibrary())) {
+    books[index] = previous;
+    return;
+  }
+  renderLibrary();
+  document.querySelectorAll(".detail-slot").forEach((slot) => slot.innerHTML = "");
+  showMessage("Library updated.");
+}
+
+async function enterApp(user) {
+  currentUser = user;
+  $("authGate").hidden = true;
+  $("appShell").hidden = false;
+  $("bottomNav").hidden = false;
+  $("avatarBtn").textContent = (user.email || "J").slice(0, 1).toUpperCase();
+  await loadLibrary();
+}
+
+function leaveApp() {
+  currentUser = null;
+  books = [];
+  libraryRevision = null;
+  $("appShell").hidden = true;
+  $("bottomNav").hidden = true;
+  $("authGate").hidden = false;
+}
+
+document.querySelectorAll("[data-collapse]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const section = button.closest("[data-section]");
+    section.classList.toggle("open");
+    button.querySelector(".chevron").textContent = section.classList.contains("open") ? "⌃" : "⌄";
+  });
+});
+
+document.addEventListener("click", async (event) => {
+  const card = event.target.closest("[data-open-book]");
+  if (card) {
+    openBookDetails(card.dataset.openBook, card.dataset.kind);
+    return;
+  }
+
+  const close = event.target.closest("[data-close-detail]");
+  if (close) {
+    close.closest(".detail-slot").innerHTML = "";
+    return;
+  }
+
+  const add = event.target.closest("[data-add-result]");
+  if (add) {
+    await addSearchResult(Number(add.dataset.addResult), add);
+    return;
+  }
+
+  const status = event.target.closest("[data-status-book]");
+  if (status) {
+    await updateBookStatus(Number(status.dataset.statusBook), { status: status.dataset.status });
+    return;
+  }
+
+  const favorite = event.target.closest("[data-favorite-book]");
+  if (favorite) {
+    const book = books.find((b) => Number(b.id) === Number(favorite.dataset.favoriteBook));
+    if (book) await updateBookStatus(book.id, { favorite: !book.favorite });
+  }
+});
+
+$("bookSearchBtn").addEventListener("click", runSearch);
+$("bookSearchInput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") runSearch();
+});
+$("closeSearchResults").addEventListener("click", () => $("searchResultsPanel").hidden = true);
+$("navSearch").addEventListener("click", () => {
+  $("bookSearchInput").focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+$("navAdd").addEventListener("click", () => {
+  $("bookSearchInput").focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+$("scanBtn").addEventListener("click", () => showMessage("Barcode scanning is the next add-on."));
+$("reloadLibraryBtn").addEventListener("click", async () => {
+  await loadLibrary();
+  showMessage("Loaded the newer library copy.");
+});
+
+function readAuthFields() {
+  const needsEmail = authMode !== "password-reset";
+  const email = $("authEmail").value.trim();
+  const password = $("authPassword").value;
+  if (needsEmail && !email) {
+    authMessage("Enter your email address.", "error");
+    $("authEmail").focus();
+    return null;
+  }
+  if (needsEmail && !$("authEmail").checkValidity()) {
+    authMessage("Enter a valid email address.", "error");
+    $("authEmail").focus();
+    return null;
+  }
+  if (!password) {
+    authMessage(authMode === "signup" ? "Create a password." : authMode === "password-reset" ? "Enter your new password." : "Enter your password.", "error");
+    $("authPassword").focus();
+    return null;
+  }
+  if (password.length < 6) {
+    authMessage("Password must be at least 6 characters.", "error");
+    $("authPassword").focus();
+    return null;
+  }
+  return { email, password };
+}
+
+async function submitAuth() {
+  if (authBusy) return;
+  const credentials = readAuthFields();
+  if (!credentials) return;
+
+  if (authMode === "password-reset") {
+    authMessage("Saving your new password…");
+    setAuthBusy(true, "Saving password…");
+    try {
+      const { data, error } = await db.auth.updateUser({ password: credentials.password });
+      if (error) {
+        authMessage(friendlyAuthError(error, "password-reset"), "error");
+        return;
+      }
+      const user = data?.user || recoveryUser;
+      authMessage("Password updated. Opening your library…", "success");
+      history.replaceState({}, document.title, currentAuthBaseUrl);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (user) await enterApp(user);
+      else {
+        setAuthMode("signin", false);
+        authMessage("Password updated. Sign in with your new password.", "success");
+      }
+    } catch (error) {
+      authMessage(friendlyAuthError(error, "password-reset"), "error");
+    } finally {
+      setAuthBusy(false);
+    }
+    return;
+  }
+
+  const isSignup = authMode === "signup";
+  authMessage(isSignup ? "Creating your account…" : "Signing you in…");
+  setAuthBusy(true, isSignup ? "Creating account…" : "Signing in…");
+
+  try {
+    if (!isSignup) {
+      const { data, error } = await db.auth.signInWithPassword(credentials);
+      if (error) {
+        authMessage(friendlyAuthError(error, "signin"), "error");
+        return;
+      }
+      if (!data?.user) {
+        authMessage("We couldn't open that account. Try signing in again.", "error");
+        return;
+      }
+      authMessage("");
+      await enterApp(data.user);
+      return;
+    }
+
+    const { data, error } = await db.auth.signUp({
+      email: credentials.email,
+      password: credentials.password,
+      options: { emailRedirectTo: AUTH_REDIRECT_URL }
+    });
+
+    if (error) {
+      authMessage(friendlyAuthError(error, "signup"), "error");
+      return;
+    }
+
+    if (data?.session && data?.user) {
+      authMessage("");
+      await enterApp(data.user);
+      return;
+    }
+
+    const identities = Array.isArray(data?.user?.identities) ? data.user.identities : null;
+    const maybeExistingAccount = identities && identities.length === 0;
+    setAuthMode("signin", false);
+    $("authEmail").value = credentials.email;
+    $("authPassword").value = "";
+    authMessage(maybeExistingAccount
+      ? "If that email can create a Jazzy's Books account, a confirmation message will arrive soon. If you already have an account, switch to Sign in."
+      : "Account created. Check your email for the confirmation link. After you confirm it, Jazzy's Books will bring you back into your library.", "success");
+  } catch (error) {
+    authMessage(friendlyAuthError(error, isSignup ? "signup" : "signin"), "error");
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+async function sendPasswordReset() {
+  if (authBusy) return;
+  const email = $("authEmail").value.trim();
+  if (!email) {
+    authMessage("Enter your email address first, then tap Forgot password.", "error");
+    $("authEmail").focus();
+    return;
+  }
+  if (!$("authEmail").checkValidity()) {
+    authMessage("Enter a valid email address.", "error");
+    $("authEmail").focus();
+    return;
+  }
+
+  authMessage("Sending your reset link…");
+  setAuthBusy(true, "Please wait…");
+  try {
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: AUTH_REDIRECT_URL });
+    if (error) {
+      authMessage(friendlyAuthError(error, "forgot"), "error");
+      return;
+    }
+    authMessage("Reset link sent. Check your email, open the link, and you'll return here to choose a new password.", "success");
+  } catch (error) {
+    authMessage(friendlyAuthError(error, "forgot"), "error");
+  } finally {
+    setAuthBusy(false);
+  }
+}
+
+$("signInBtn").addEventListener("click", () => setAuthMode("signin"));
+$("signUpBtn").addEventListener("click", () => setAuthMode("signup"));
+$("forgotPasswordBtn").addEventListener("click", sendPasswordReset);
+
+$("togglePasswordBtn").addEventListener("click", () => {
+  const showing = $("authPassword").type === "text";
+  const nextType = showing ? "password" : "text";
+  $("authPassword").type = nextType;
+  $("togglePasswordBtn").textContent = showing ? "Show" : "Hide";
+  $("togglePasswordBtn").setAttribute("aria-label", showing ? "Show password" : "Hide password");
+});
+
+$("authForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitAuth();
+});
+
+["authEmail", "authPassword"].forEach((id) => {
+  $(id).addEventListener("input", () => {
+    if ($("authMessage").classList.contains("error")) authMessage("");
+  });
+});
+
+$("previewBtn").addEventListener("click", () => {
+  authMessage("");
+  $("authGate").hidden = true;
+  $("appShell").hidden = false;
+  $("bottomNav").hidden = false;
+  renderLibrary();
+  showMessage("Preview mode — sign in before searching or saving books.");
+});
+
+setAuthMode("signin");
+
+$("avatarBtn").addEventListener("click", async () => {
+  if (!currentUser) {
+    $("authGate").hidden = false;
+    setAuthMode("signin");
+    authMessage("Sign in or create an account to open your private library.");
+    return;
+  }
+  if (!confirm("Sign out of Jazzy's Books?")) return;
+  await db.auth.signOut();
+  setAuthMode("signin");
+  leaveApp();
+});
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === "PASSWORD_RECOVERY" && session?.user) {
+    setTimeout(() => showPasswordRecovery(session.user), 0);
+    return;
+  }
+  if (event === "SIGNED_IN" && session?.user && !RECOVERY_LINK_AT_LOAD && authMode !== "password-reset" && currentUser?.id !== session.user.id) {
+    setTimeout(() => enterApp(session.user).catch(() => {
+      authMessage("We signed you in, but couldn't open the library. Try again.", "error");
+      leaveApp();
+    }), 0);
+  }
+});
+
+(async function init() {
+  const linkProblem = authLinkProblem();
+  const { data: { session }, error } = await db.auth.getSession();
+  if (error) {
+    setAuthMode("signin", false);
+    authMessage(linkProblem || "We couldn't check your session. You can still sign in below.", "error");
+    leaveApp();
+    return;
+  }
+  if (session?.user) {
+    if (RECOVERY_LINK_AT_LOAD) {
+      showPasswordRecovery(session.user);
+      return;
+    }
+    try {
+      await enterApp(session.user);
+    } catch {
+      authMessage("We couldn't load your library. Try signing in again.", "error");
+      leaveApp();
+    }
+  } else {
+    leaveApp();
+    if (linkProblem) authMessage(linkProblem, "error");
+    else if (RECOVERY_LINK_AT_LOAD) authMessage("That reset link could not be opened. Request a new reset email and use the latest link.", "error");
+  }
+})();
